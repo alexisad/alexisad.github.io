@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+    <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.0/mapsjs-ui.css" />
+    <script type="text/javascript" src="js/kefir.min.js"></script>
+    <script type="text/javascript" src="js/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" src="https://js.api.here.com/v3/3.0/mapsjs-core.js"></script>
+    <script type="text/javascript" src="https://js.api.here.com/v3/3.0/mapsjs-service.js"></script>
+    <script type="text/javascript" src="https://js.api.here.com/v3/3.0/mapsjs-ui.js"></script>
+    <script type="text/javascript" src="https://js.api.here.com/v3/3.0/mapsjs-mapevents.js"></script>
+    <style>
+        body {
+            position: relative;
+        }
+        
+        .main-root {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            background-color: aquamarine;
+            height: 600px;
+            overflow: scroll;
+        }
+        
+        .sector {
+            padding: 10px;
+            border: 1px solid white;
+        }
+        
+        .sector .sect-name {
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+        
+        .street {
+            padding-left: 10px;
+            cursor: pointer;
+        }
+        
+        .move-str-marker {
+            background-color: darkgreen;
+            padding: 5px;
+            color: white;
+        }
+        
+        .close-str-mv {
+            display: block;
+            margin: 5px 0 0 0;
+        }
+        
+        .streets {}
+    </style>
+
+</head>
+
+<body>
+    <div id="map" style="width: 100%; height: 600px; background: grey"></div>
+    <div id="main-control-container"></div>
+
+    <script type="text/javascript" src="js/hmapjs_gebiet.js"></script>
+
+</body>
+
+</html>
