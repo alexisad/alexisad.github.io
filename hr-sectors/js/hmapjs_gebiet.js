@@ -5796,7 +5796,7 @@ function create_dom_327225() {
 }
 var Tmp2;
 var Tmp3;
-var opts_334511 = {app_id: "Nh6iWiByokLga5vjPMzp", app_code: "KJuYXbf9ITLwWJ7PK6axiQ", useHTTPS: true, m_type: NTI283030, useCIT: false};
+var opts_334511 = {useHTTPS: true, m_type: NTI283030, app_id: null, app_code: null, useCIT: false};
 var pixel_ratio_334512 = window.devicePixelRatio;
 var hidpi_334513 = (1.0000000000000000e+000 < pixel_ratio_334512);
 if (hidpi_334513) {
