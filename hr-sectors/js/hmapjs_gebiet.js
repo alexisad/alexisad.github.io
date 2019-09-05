@@ -16,7 +16,7 @@ var NTI221202 = {size: 0, kind: 14, base: null, node: null, finalizer: null};
 var NTI221223 = {size: 0, kind: 17, base: null, node: null, finalizer: null};
 var NTI221227 = {size: 0, kind: 17, base: null, node: null, finalizer: null};
 var NTI47886 = {size: 0, kind: 17, base: null, node: null, finalizer: null};
-var NTI244084 = {size: 0, kind: 17, base: null, node: null, finalizer: null};
+var NTI244085 = {size: 0, kind: 17, base: null, node: null, finalizer: null};
 var NTI196716 = {size: 0,kind: 24,base: null,node: null,finalizer: null};
 var NTI287131 = {size: 0, kind: 17, base: null, node: null, finalizer: null};
 var NTI243040 = {size: 0, kind: 17, base: null, node: null, finalizer: null};
@@ -28,9 +28,9 @@ var NTI93289 = {size: 0, kind: 17, base: null, node: null, finalizer: null};
 var NTI242100 = {size: 0, kind: 17, base: null, node: null, finalizer: null};
 var NTI244056 = {size: 0, kind: 17, base: null, node: null, finalizer: null};
 var NTI244076 = {size: 0, kind: 17, base: null, node: null, finalizer: null};
-var NTI244094 = {size: 0,kind: 25,base: null,node: null,finalizer: null};
-var NTI244088 = {size: 0,kind: 25,base: null,node: null,finalizer: null};
-var NTI244087 = {size: 0, kind: 17, base: null, node: null, finalizer: null};
+var NTI244096 = {size: 0,kind: 25,base: null,node: null,finalizer: null};
+var NTI244090 = {size: 0,kind: 25,base: null,node: null,finalizer: null};
+var NTI244089 = {size: 0, kind: 17, base: null, node: null, finalizer: null};
 var NTI361716 = {size: 0,kind: 24,base: null,node: null,finalizer: null};
 var NTI361707 = {size: 0,kind: 24,base: null,node: null,finalizer: null};
 var NTI361702 = {size: 0,kind: 24,base: null,node: null,finalizer: null};
@@ -797,10 +797,10 @@ NTI361487.base = NTI44006;
 NTI361702.base = NTI44006;
 NTI361707.base = NTI44006;
 NTI361716.base = NTI44006;
-var NNI244087 = {kind: 2, len: 2, offset: 0, typ: null, name: null, sons: [{kind: 1, offset: "onAttach", len: 0, typ: NTI244088, name: "onAttach", sons: null}, 
-{kind: 1, offset: "onDetach", len: 0, typ: NTI244094, name: "onDetach", sons: null}]};
-NTI244087.node = NNI244087;
-NTI244087.base = NTI223055;
+var NNI244089 = {kind: 2, len: 2, offset: 0, typ: null, name: null, sons: [{kind: 1, offset: "onAttach", len: 0, typ: NTI244090, name: "onAttach", sons: null}, 
+{kind: 1, offset: "onDetach", len: 0, typ: NTI244096, name: "onDetach", sons: null}]};
+NTI244089.node = NNI244089;
+NTI244089.base = NTI223055;
 var NNI244076 = {kind: 2, len: 3, offset: 0, typ: null, name: null, sons: [{kind: 1, offset: "strokeColor", len: 0, typ: NTI44042, name: "strokeColor", sons: null}, 
 {kind: 1, offset: "fillColor", len: 0, typ: NTI44042, name: "fillColor", sons: null}, 
 {kind: 1, offset: "lineWidth", len: 0, typ: NTI44006, name: "lineWidth", sons: null}]};
@@ -825,7 +825,8 @@ NTI242100.base = NTI93289;
 NTI244056.base = NTI242100;
 NTI244076.base = NTI244056;
 NTI244048.base = NTI244076;
-var NNI244081 = {kind: 1, offset: "style", len: 0, typ: NTI244048, name: "style", sons: null};
+var NNI244081 = {kind: 2, len: 2, offset: 0, typ: null, name: null, sons: [{kind: 1, offset: "style", len: 0, typ: NTI244048, name: "style", sons: null}, 
+{kind: 1, offset: "zIndex", len: 0, typ: NTI44006, name: "zIndex", sons: null}]};
 NTI244081.node = NNI244081;
 NTI244081.base = NTI223055;
 var NNI243040 = {kind: 2, len: 0, offset: 0, typ: null, name: null, sons: []};
@@ -840,9 +841,10 @@ var NNI287131 = {kind: 2, len: 4, offset: 0, typ: null, name: null, sons: [{kind
 NTI287131.node = NNI287131;
 NTI287131.base = NTI287121;
 NTI196716.base = NTI44040;
-var NNI244084 = {kind: 1, offset: "style", len: 0, typ: NTI244048, name: "style", sons: null};
-NTI244084.node = NNI244084;
-NTI244084.base = NTI223055;
+var NNI244085 = {kind: 2, len: 2, offset: 0, typ: null, name: null, sons: [{kind: 1, offset: "style", len: 0, typ: NTI244048, name: "style", sons: null}, 
+{kind: 1, offset: "zIndex", len: 0, typ: NTI44006, name: "zIndex", sons: null}]};
+NTI244085.node = NNI244085;
+NTI244085.base = NTI223055;
 var NNI47886 = {kind: 2, len: 0, offset: 0, typ: null, name: null, sons: []};
 NTI47886.node = NNI47886;
 NTI47886.base = NTI47828;
@@ -7080,7 +7082,7 @@ function on_grp_street_335171(e_335173) {
 		btn_close_338415.className = "close-str-mv";
 		el_move_street_335184.childNodes[1].appendChild(btn_ok_335200);
 		el_move_street_335184.childNodes[1].appendChild(btn_close_338415);
-		var di_opt_338615 = {onAttach: HEX3Aanonymous_338416, onDetach: HEX3Aanonymous_338486, m_type: NTI244087};
+		var di_opt_338615 = {onAttach: HEX3Aanonymous_338416, onDetach: HEX3Aanonymous_338486, m_type: NTI244089};
 		var icon_move_street_338616 = function(element, opt){return new H.map.DomIcon(element, opt)}(el_move_street_335184, di_opt_338615);
 		var geo_point_338617 = map.screenToGeo(e_335173.currentPointer.viewportX, e_335173.currentPointer.viewportY);
 		var mv_street_marker_338618 = function(position){return new H.map.DomMarker(position)}(geo_point_338617);
@@ -7190,9 +7192,9 @@ function display_street_338892(name_338894, tree_338895) {
 							} while(false);
 						} while(false);
 							if (!has_key_343724(all_links_299614[0], link_343214.linkId)) Tmp20 = false; else {								Tmp20 = !((Tmp21 = HEX5BHEX5D_344532(all_links_299614[0], link_343214.linkId), Tmp21)[0][Tmp21[1]].addedToMap);							}						if (Tmp20) {
-						var p_opt_345035 = {style: {strokeColor: "rgba(0, 0, 255, 0.4)", fillColor: "rgba(255, 0, 0, 0.4)", lineWidth: 10, m_type: NTI244076, bubbles: false, cancelBubble: false, cancelable: false, composed: false, currentTarget: null, defaultPrevented: false, eventPhase: 0, target: null, type: null, isTrusted: false}, m_type: NTI244081};
-						var pl_345036 = function(ls, options){return new H.map.Polyline(ls, options)}(ln_str_343469, p_opt_345035);
-						grp_street_343215.addObject(pl_345036);
+						var p_opt_345036 = {style: {strokeColor: "rgba(0, 0, 255, 0.4)", fillColor: "rgba(255, 0, 0, 0.4)", lineWidth: 10, m_type: NTI244076, bubbles: false, cancelBubble: false, cancelable: false, composed: false, currentTarget: null, defaultPrevented: false, eventPhase: 0, target: null, type: null, isTrusted: false}, zIndex: 99, m_type: NTI244081};
+						var pl_345037 = function(ls, options){return new H.map.Polyline(ls, options)}(ln_str_343469, p_opt_345036);
+						grp_street_343215.addObject(pl_345037);
 						(Tmp22 = HEX5BHEX5D_344532(all_links_299614[0], link_343214.linkId), Tmp22)[0][Tmp22[1]].addedToMap = true;
 						}
 						
@@ -8004,7 +8006,7 @@ function parse_tiles_354656(tiles_354659) {
 							if (!(i_384874 < l_384875)) break L4;
 								g_380814 = geoms_380566[chckIndx(i_384874, 0, geoms_380566.length+0-1)-0];
 								var ln_str_380819 = g_380814.getExterior();
-								var p_opt_381001 = {style: {strokeColor: "rgba(0, 255, 255, 1)", fillColor: "rgba(0, 255, 255, 1)", lineWidth: 10, m_type: NTI244076, bubbles: false, cancelBubble: false, cancelable: false, composed: false, currentTarget: null, defaultPrevented: false, eventPhase: 0, target: null, type: null, isTrusted: false}, m_type: NTI244081};
+								var p_opt_381001 = {style: {strokeColor: "rgba(0, 255, 255, 1)", fillColor: "rgba(0, 255, 255, 1)", lineWidth: 10, m_type: NTI244076, bubbles: false, cancelBubble: false, cancelable: false, composed: false, currentTarget: null, defaultPrevented: false, eventPhase: 0, target: null, type: null, isTrusted: false}, m_type: NTI244081, zIndex: 0};
 								var pl_381002 = function(ls, options){return new H.map.Polyline(ls, options)}(ln_str_380819, p_opt_381001);
 								if ((city_id_301615[0] == 0)) {
 								map.addObject(pl_381002);
@@ -8231,9 +8233,9 @@ function geo_area_351780() {
 				var res_352830 = r_352820.Response.View[0].Result[0];
 				var loc_352831 = res_352830["Location"];
 				var shp_352844 = cstrToNimstr((loc_352831.Shape.Value));
-				var p_opt_352845 = {style: {strokeColor: "rgba(0, 0, 255, 1)", fillColor: "rgba(0, 0, 255, 0.1)", lineWidth: 1, m_type: NTI244076, bubbles: false, cancelBubble: false, cancelable: false, composed: false, currentTarget: null, defaultPrevented: false, eventPhase: 0, target: null, type: null, isTrusted: false}, m_type: NTI244084};
-				var pl_352851 = function(ls, opt){return new H.map.Polygon(ls, opt)}(function(wkt){return new H.util.wkt.toGeometry(wkt)}(toJSStr(shp_352844)), p_opt_352845);
-				map.addObject(pl_352851);
+				var p_opt_352848 = {style: {strokeColor: "rgba(0, 0, 255, 1)", fillColor: "rgba(0, 0, 255, 0.1)", lineWidth: 1, m_type: NTI244076, bubbles: false, cancelBubble: false, cancelable: false, composed: false, currentTarget: null, defaultPrevented: false, eventPhase: 0, target: null, type: null, isTrusted: false}, zIndex: -99, m_type: NTI244085};
+				var pl_352854 = function(ls, opt){return new H.map.Polygon(ls, opt)}(function(wkt){return new H.util.wkt.toGeometry(wkt)}(toJSStr(shp_352844)), p_opt_352848);
+				map.addObject(pl_352854);
 
 			
 		}
@@ -8287,7 +8289,7 @@ function geo_area_351780() {
 			} while(false);
 		} while(false);
 		hr_ln_str_351883.pushLatLngAlt(chckRange(nsuParseFloat(hr_arr_area_351882[chckIndx(1, 0, hr_arr_area_351882.length+0-1)-0]), -9.0000000000000000e+001, 9.0000000000000000e+001), chckRange(nsuParseFloat(hr_arr_area_351882[chckIndx(0, 0, hr_arr_area_351882.length+0-1)-0]), -1.8000000000000000e+002, 1.8000000000000000e+002), nsuParseFloat(hr_arr_area_351882[chckIndx(2, 0, hr_arr_area_351882.length+0-1)-0]));
-		var p_opt_352001 = {style: {strokeColor: "rgba(255, 255, 0, 1)", fillColor: "rgba(255, 255, 0, 1)", lineWidth: 10, m_type: NTI244076, bubbles: false, cancelBubble: false, cancelable: false, composed: false, currentTarget: null, defaultPrevented: false, eventPhase: 0, target: null, type: null, isTrusted: false}, m_type: NTI244081};
+		var p_opt_352001 = {style: {strokeColor: "rgba(255, 255, 0, 1)", fillColor: "rgba(255, 255, 0, 1)", lineWidth: 10, m_type: NTI244076, bubbles: false, cancelBubble: false, cancelable: false, composed: false, currentTarget: null, defaultPrevented: false, eventPhase: 0, target: null, type: null, isTrusted: false}, m_type: NTI244081, zIndex: 0};
 		var pl_352002 = function(ls, options){return new H.map.Polyline(ls, options)}(hr_ln_str_351883, p_opt_352001);
 		map.addObject(pl_352002);
 		var geocoding_parameters_352401 = {m_type: NTI287131, searchtext: null, country: null, state: null, additionaldata: null};
@@ -8562,7 +8564,7 @@ function display_sector_308690(sect_name_308692, show_308693) {
 													}
 											} while(false);
 										} while(false);
-										var p_opt_351353 = {style: {strokeColor: "rgba(255, 0, 0, 0.2)", fillColor: "rgba(255, 0, 0, 0.4)", lineWidth: 10, m_type: NTI244076, bubbles: false, cancelBubble: false, cancelable: false, composed: false, currentTarget: null, defaultPrevented: false, eventPhase: 0, target: null, type: null, isTrusted: false}, m_type: NTI244081};
+										var p_opt_351353 = {style: {strokeColor: "rgba(255, 0, 0, 0.2)", fillColor: "rgba(255, 0, 0, 0.4)", lineWidth: 10, m_type: NTI244076, bubbles: false, cancelBubble: false, cancelable: false, composed: false, currentTarget: null, defaultPrevented: false, eventPhase: 0, target: null, type: null, isTrusted: false}, m_type: NTI244081, zIndex: 0};
 										var pl_351354 = function(ls, options){return new H.map.Polyline(ls, options)}(ln_str_351345, p_opt_351353);
 										(Tmp13 = HEX5BHEX5D_346408(sector_grp_301614[0], sector_346256), Tmp13)[0][Tmp13[1]].addObject(pl_351354);
 										i_385122 = addInt(i_385122, 1);
