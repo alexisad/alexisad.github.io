@@ -38,17 +38,12 @@
     <script>
         function addDraggableMarker(map, behavior) {
 
-            var marker = new H.map.Marker(
-                /*{
-                                    lat: 42.35805,
-                                    lng: -71.0636
-                                }*/
-                {
-                    lat: latitud,
-                    lng: longitud
-                }, {
-                    volatility: true
-                });
+            var marker = new H.map.Marker({
+                lat: latitud,
+                lng: longitud
+            }, {
+                volatility: true
+            });
 
             // Ensure that the marker can receive drag events
             marker.draggable = true;
@@ -102,7 +97,7 @@
         //Step 1: initialize communication with the platform
         // In your own code, replace variable window.apikey with your own apikey
         var platform = new H.service.Platform({
-            apikey: 'Mgzkd2sV9eN6hTdWy-ETTTtXnh9yaxlFT87dix2eBNU'
+            apikey: apiKey
         });
         var defaultLayers = platform.createDefaultLayers();
 
@@ -126,6 +121,7 @@
 
         var latitud = query_string.lat;
         var longitud = query_string.long;
+        var apiKey = query_string.apiKey;
 
         //Step 2: initialize a map - this map is centered over Boston
         var map = new H.Map(document.getElementById('map'),
@@ -133,12 +129,7 @@
                 center: {
                     lat: latitud,
                     lng: longitud
-                }
-                /*{
-                    lat: 42.35805,
-                    lng: -71.0636
-                }*/
-                ,
+                },
                 engineType: H.map.render.RenderEngine.EngineType.P2D,
                 zoom: 12,
                 pixelRatio: window.devicePixelRatio || 1
