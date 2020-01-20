@@ -90,16 +90,6 @@
             }, false);
         }
 
-        /**
-         * Boilerplate map initialization code starts below:
-         */
-
-        //Step 1: initialize communication with the platform
-        // In your own code, replace variable window.apikey with your own apikey
-        var platform = new H.service.Platform({
-            apikey: apiKey
-        });
-        var defaultLayers = platform.createDefaultLayers();
 
         //url parameters
         var query_string = {};
@@ -123,6 +113,17 @@
         var longitud = query_string.long;
         var apiKey = query_string.apiKey;
 
+        /**
+         * Boilerplate map initialization code starts below:
+         */
+
+        //Step 1: initialize communication with the platform
+        // In your own code, replace variable window.apikey with your own apikey
+        var platform = new H.service.Platform({
+            apikey: apiKey
+        });
+
+        var defaultLayers = platform.createDefaultLayers();
         //Step 2: initialize a map - this map is centered over Boston
         var map = new H.Map(document.getElementById('map'),
             defaultLayers.raster.normal.map, {
