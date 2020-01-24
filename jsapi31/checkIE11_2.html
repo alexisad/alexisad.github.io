@@ -1,0 +1,111 @@
+<!DOCTYPE html >
+<html>
+
+<head>
+    <title>"Show up"</title>
+    <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+    <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.0/mapsjs-ui.css" />
+    <script type="text/javascript" charset="UTF-8" src="https://js.api.here.com/v3/3.0/mapsjs-core.js"></script>
+    <script type="text/javascript" charset="UTF-8" src="https://js.api.here.com/v3/3.0/mapsjs-service.js"></script>
+    <script type="text/javascript" charset="UTF-8" src="https://js.api.here.com/v3/3.0/mapsjs-ui.js"></script>
+    <script type="text/javascript" charset="UTF-8" src="https://js.api.here.com/v3/3.0/mapsjs-mapevents.js"></script>
+</head>
+
+<body>
+    <div id="MapContainer" style="width: 100%; height: 92%; position: absolute; overflow: visible;">
+    </div>
+    <script type="text/javascript">
+        var marker;
+        var position;
+        var map;
+        var mapEvents;
+        var behavior;
+        var ui1;
+
+
+        function placeMarker(latitude, longitude) {
+            try {
+
+                var mlat = latitude;
+
+                if (marker) {
+                    //Remove previous marker to add new marker
+                    map.removeObject(marker);
+
+                    //remove infobubbles
+                    var previousBubbles = ui1.getBubbles();
+                    previousBubbles.forEach(function(bubs) {
+                        ui1.removeBubble(bubs);
+                    });
+                }
+
+                chosen_location = {
+                    lng: longitude,
+                    lat: latitude
+                };
+                marker = new H.map.Marker(chosen_location);
+                map.addObject(marker);
+
+                var infowindow = new H.ui.InfoBubble({
+                    lng: longitude,
+                    lat: latitude
+                }, {
+                    content: 'Latitude: ' + latitude + '<br>Longitude: ' + longitude
+                });
+                ui1.addBubble(infowindow);
+            } catch (e) {
+                alert("Exception in placeMarker");
+                alert(e);
+            }
+        }
+
+        function initialize() {
+            try {
+
+                var platform = new H.service.Platform({
+                    app_id: 'UHuJLJrJznje69zJ2HB7',
+                    app_code: 'HdAoJ-BlDvmvb0eksDYqyg',
+                    useCIT: true,
+                    useHTTPS: true
+                });
+                var defaultLayers = platform.createDefaultLayers();
+                defaultLayers.normal.map.setMin(3);
+                defaultLayers.normal.map.setMax(10);
+
+                // initialize a map - this map is centered over {0.0}
+                var mapContainer = document.getElementById("MapContainer");
+                map = new H.Map(mapContainer, defaultLayers.normal.map);
+
+                // MapEvents enables the event system
+                mapEvents = new H.mapevents.MapEvents(map);
+
+                // Instantiate the default behavior, providing the mapEvents object: 
+                behavior = new H.mapevents.Behavior(mapEvents);
+
+                // Create the default UI components
+                ui1 = H.ui.UI.createDefault(map, defaultLayers);
+
+                //Managing the Position of UI Controls
+                var mapSettings = ui1.getControl('mapsettings');
+                var zoom = ui1.getControl('zoom');
+                var scalebar = ui1.getControl('scalebar');
+
+                mapSettings.setAlignment('top-left');
+                zoom.setAlignment('top-left');
+                scalebar.setAlignment('top-left');
+
+                map.addEventListener('tap', function(evt) {
+                    var coord = map.screenToGeo(evt.currentPointer.viewportX, evt.currentPointer.viewportY);
+                    placeMarker(Math.abs(coord.lat.toFixed(4)), Math.abs(coord.lng.toFixed(4)));
+                });
+            } catch (e) {
+                alert(e);
+            }
+
+        }
+
+        window.addEventListener('load', initialize);
+    </script>
+</body>
+
+</html>
