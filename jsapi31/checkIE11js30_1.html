@@ -1,0 +1,244 @@
+<!DOCTYPE html >
+<html>
+
+<head>
+    <title>CheckIE11</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+    <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.0/mapsjs-ui.css" />
+    <script type="text/javascript" charset="UTF-8" src="https://js.api.here.com/v3/3.0/mapsjs-core.js"></script>
+    <script type="text/javascript" charset="UTF-8" src="https://js.api.here.com/v3/3.0/mapsjs-service.js"></script>
+    <script type="text/javascript" charset="UTF-8" src="https://js.api.here.com/v3/3.0/mapsjs-ui.js"></script>
+    <script type="text/javascript" charset="UTF-8" src="https://js.api.here.com/v3/3.0/mapsjs-mapevents.js"></script>
+</head>
+
+<body>
+    <div id="mapContainer" style="width: 90%; height: 90%; position: absolute;">
+    </div>
+    <script type="text/javascript">
+        var map;
+        var mapEvents;
+        var behavior
+        var locations = [{
+            relevance: 1,
+            matchLevel: "street",
+            matchQuality: {
+                country: 1,
+                city: 1,
+                street: [
+                    1
+                ],
+            },
+            location: {
+                locationId: "NT_OV3A4F7PVZMW36XQixpFiB",
+                locationType: "address",
+                displayPosition: {
+                    latitude: 50.11201,
+                    longitude: 8.68305,
+                },
+                navigationPosition: [{
+                    latitude: 50.11201,
+                    longitude: 8.68305,
+                }],
+                mapView: {
+                    topLeft: {
+                        latitude: 50.1124099,
+                        longitude: 8.67729,
+                    },
+                    bottomRight: {
+                        latitude: 50.11069,
+                        longitude: 8.68589,
+                    },
+                },
+                address: {
+                    label: "Berliner Straße, 60311 Frankfurt, Germany",
+                    country: "DEU",
+                    state: "Hesse",
+                    county: "Frankfurt",
+                    city: "Frankfurt",
+                    street: "Berliner Straße",
+                    postalCode: "60311",
+                    additionalData: [{
+                        value: "Germany",
+                        key: "CountryName",
+                    }, {
+                        value: "Hesse",
+                        key: "StateName",
+                    }, {
+                        value: "Frankfurt",
+                        key: "CountyName",
+                    }, ],
+                },
+            },
+        }, {
+            relevance: 1,
+            matchLevel: "street",
+            matchQuality: {
+                country: 1,
+                city: 1,
+                street: [
+                    1
+                ],
+            },
+            location: {
+                locationId: "NT_QvIG0UrMXWdH4JK01n3gmD",
+                locationType: "address",
+                displayPosition: {
+                    latitude: 52.35268,
+                    longitude: 14.54823,
+                },
+                navigationPosition: [{
+                    latitude: 52.35268,
+                    longitude: 14.54823,
+                }],
+                mapView: {
+                    topLeft: {
+                        latitude: 52.35475,
+                        longitude: 14.54752,
+                    },
+                    bottomRight: {
+                        latitude: 52.35475,
+                        longitude: 14.54916,
+                    },
+                },
+                address: {
+                    label: "Berliner Straße, 15230 Frankfurt (Oder), Germany",
+                    country: "DEU",
+                    state: "Brandenburg",
+                    county: "Frankfurt (Oder)",
+                    city: "Frankfurt (Oder)",
+                    district: "Frankfurt (Oder)",
+                    street: "Berliner Straße",
+                    postalCode: "15230",
+                    additionalData: [{
+                        value: "Germany",
+                        key: "CountryName",
+                    }, {
+                        value: "Brandenburg",
+                        key: "StateName",
+                    }, {
+                        value: "Frankfurt (Oder)",
+                        key: "CountyName",
+                    }, ],
+                },
+            },
+        }, {
+            relevance: 1,
+            matchLevel: "street",
+            matchQuality: {
+                country: 1,
+                city: 1,
+                street: [
+                    1
+                ],
+            },
+            location: {
+                locationId: "NT_Bj3r1wB7gYW.-nPEkkv14B",
+                locationType: "address",
+                displayPosition: {
+                    latitude: 52.37272,
+                    longitude: 14.46885,
+                },
+                navigationPosition: [{
+                    latitude: 52.37272,
+                    longitude: 14.46885,
+                }],
+                mapView: {
+                    topLeft: {
+                        latitude: 52.38643,
+                        longitude: 14.42805,
+                    },
+                    bottomRight: {
+                        latitude: 52.37459,
+                        longitude: 14.49223,
+                    },
+                },
+                address: {
+                    label: "Berliner Straße, 15234 Frankfurt (Oder), Germany",
+                    country: "DEU",
+                    state: "Brandenburg",
+                    county: "Frankfurt (Oder)",
+                    city: "Frankfurt (Oder)",
+                    street: "Berliner Straße",
+                    postalCode: "15234",
+                    additionalData: [{
+                        value: "Germany",
+                        key: "CountryName",
+                    }, {
+                        value: "Brandenburg",
+                        key: "StateName",
+                    }, {
+                        value: "Frankfurt (Oder)",
+                        key: "CountyName",
+                    }, ],
+                },
+            },
+        }, ];
+
+
+        function mapInit() {
+
+            var platform = new H.service.Platform({
+                app_id: 'UHuJLJrJznje69zJ2HB7',
+                app_code: 'HdAoJ-BlDvmvb0eksDYqyg',
+                useCIT: true,
+                useHTTPS: true
+            });
+            var defaultLayers = platform.createDefaultLayers();
+
+            // initialize a map - this map is centered over {0.0}
+            var mapContainer = document.getElementById("mapContainer");
+            map = new H.Map(mapContainer, defaultLayers.normal.map);
+
+            // MapEvents enables the event system
+            mapEvents = new H.mapevents.MapEvents(map);
+
+            // Instantiate the default behavior, providing the mapEvents object: 
+            behavior = new H.mapevents.Behavior(mapEvents);
+
+            // Create the default UI components
+            var ui = H.ui.UI.createDefault(map, defaultLayers);
+
+
+            addLocationsToMap(locations); //should invoke after a map has been initialized
+
+        }
+
+
+        function addLocationsToMap(locations) {
+            $vehPoints = '';
+            $dvListLength = 0;
+            var icon = '';
+            if (locations.length > 0) {
+                var group = new H.map.Group();
+                var position, i;
+                //var icon = new H.map.Icon('/Images/Icons/destination1.png');
+                // Add a marker for each location found
+                for (i = 0; i < locations.length; i += 1) {
+                    position = {
+                        lat: locations[i].location.displayPosition.latitude,
+                        lng: locations[i].location.displayPosition.longitude
+                    };
+                    var marker = new H.map.Marker(position, {
+                        //icon: icon
+                    });
+                    marker.label = locations[i].location.address.label;
+                    group.addObject(marker);
+                }
+                group.addEventListener('tap', function(evt) {
+                    openBubble(evt.target.getPosition(), evt.target.label);
+                }, false);
+
+                map.addObject(group);
+                map.setViewBounds(group.getBounds());
+            } else {
+                alert('Address not found');
+                return false;
+            }
+        }
+
+        window.addEventListener('load', mapInit);
+    </script>
+</body>
+
+</html>
