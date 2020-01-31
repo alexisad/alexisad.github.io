@@ -104,9 +104,9 @@ window.addEventListener('resize', function() {
     map.getViewPort().resize();
 });
 window.setTimeout(function() {
-    alert("time");
+    alert("time2");
     map.getViewPort().resize();
-}, 1000);
+}, 5000);
 
 //Step 3: make the map interactive
 // MapEvents enables the event system
