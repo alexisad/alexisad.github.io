@@ -5,11 +5,13 @@
     <title>"Show up"</title>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta name="viewport" content="initial-scale=1.0, width=device-width" />
-    <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.0/mapsjs-ui.css" />
-    <script type="text/javascript" charset="UTF-8" src="https://js.api.here.com/v3/3.0/mapsjs-core.js"></script>
-    <script type="text/javascript" charset="UTF-8" src="https://js.api.here.com/v3/3.0/mapsjs-service.js"></script>
-    <script type="text/javascript" charset="UTF-8" src="https://js.api.here.com/v3/3.0/mapsjs-ui.js"></script>
-    <script type="text/javascript" charset="UTF-8" src="https://js.api.here.com/v3/3.0/mapsjs-mapevents.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.1/mapsjs-ui.css" />
+    <script type="text/javascript" charset="UTF-8" src="https://js.api.here.com/v3/3.1/mapsjs-core.js"></script>
+    <script src="https://js.api.here.com/v3/3.1/mapsjs-core-legacy.js" type="text/javascript" charset="utf-8"></script>
+    <script type="text/javascript" charset="UTF-8" src="https://js.api.here.com/v3/3.1/mapsjs-service.js"></script>
+    <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-service-legacy.js"></script>
+    <script type="text/javascript" charset="UTF-8" src="https://js.api.here.com/v3/3.1/mapsjs-ui.js"></script>
+    <script type="text/javascript" charset="UTF-8" src="https://js.api.here.com/v3/3.1/mapsjs-mapevents.js"></script>
 </head>
 
 <body>
@@ -64,18 +66,19 @@
             try {
 
                 var platform = new H.service.Platform({
-                    app_id: 'UHuJLJrJznje69zJ2HB7',
-                    app_code: 'HdAoJ-BlDvmvb0eksDYqyg',
+                    apikey: 'Mgzkd2sV9eN6hTdWy-ETTTtXnh9yaxlFT87dix2eBNU',
                     useCIT: true,
                     useHTTPS: true
                 });
                 var defaultLayers = platform.createDefaultLayers();
-                defaultLayers.normal.map.setMin(3);
-                defaultLayers.normal.map.setMax(10);
+                defaultLayers.raster.normal.map.setMin(3);
+                defaultLayers.raster.normal.map.setMax(10);
 
                 // initialize a map - this map is centered over {0.0}
                 var mapContainer = document.getElementById("MapContainer");
-                map = new H.Map(mapContainer, defaultLayers.normal.map);
+                map = new H.Map(mapContainer, defaultLayers.raster.normal.map, {
+                    engineType: H.map.render.RenderEngine.EngineType.P2D
+                });
 
                 // MapEvents enables the event system
                 mapEvents = new H.mapevents.MapEvents(map);
