@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+    <title>Map with postcodes from the Advanced Data Sets</title>
+    <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.1/mapsjs-ui.css" />
+    <link rel="stylesheet" type="text/css" href="demo.css" />
+    <link rel="stylesheet" type="text/css" href="styles.css" />
+    <link rel="stylesheet" type="text/css" href="../template.css" />
+    <script type="text/javascript" src='../test-credentials.js'></script>
+    <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-core.js"></script>
+    <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-core-legacy.js"></script>
+    <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-service.js"></script>
+    <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-service-legacy.js"></script>
+    <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-ui.js"></script>
+    <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-mapevents.js"></script>
+</head>
+
+<body id="markers-on-the-map">
+
+
+    <div id="map"></div>
+    <h3>Code</h3>
+
+    <script>
+        // In your own code, replace variable window.apikey with your own apikey
+        var platform = new H.service.Platform({
+            apikey: window.apikey
+        });
+
+        var defaultLayers = platform.createDefaultLayers();
+        console.log("defaultLayers:", defaultLayers, H.Map.EngineType.P2D);
+
+        //Step 2: initialize a map  - not specificing a location will give a whole world view.
+        var map = new H.Map(document.getElementById('map'),
+            defaultLayers.raster.normal.map, {
+                engineType: H.Map.EngineType.P2D,
+                pixelRatio: window.devicePixelRatio || 1
+            });
+        // add a resize listener to make sure that the map occupies the whole container
+        window.addEventListener('resize', () => map.getViewPort().resize());
+
+        map.setCenter({
+            lat: -37.764661480,
+            lng: 144.815784
+        });
+        map.setZoom(16);
+
+        //Step 3: make the map interactive
+        // MapEvents enables the event system
+        // Behavior implements default interactions for pan/zoom (also on mobile touch environments)
+        var behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
+
+        // Create the default UI components
+        var ui = H.ui.UI.createDefault(map, defaultLayers);
+
+        // create info bubble that is used to display the postcode data
+        bubble = new H.ui.InfoBubble(map.getCenter(), {
+            content: ''
+        });
+        bubble.close();
+        ui.addBubble(bubble);
+    </script>
+</body>
+
+</html>
