@@ -200,7 +200,9 @@
             var ui = H.ui.UI.createDefault(map, defaultLayers);
 
 
-            addLocationsToMap(locations); //should invoke after a map has been initialized
+            setTimeout(function() {
+                addLocationsToMap(locations);
+            }, 5000); //should invoke after a map has been initialized
 
         }
 
