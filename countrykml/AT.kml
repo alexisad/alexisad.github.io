@@ -5316,7 +5316,7 @@
             </MultiGeometry>
             <Style>
                 <PolyStyle>
-                    <color>60BFFF00</color>
+                    <color>6600ffff</color>
                     <fill>1</fill>
                     <outline>0</outline>
                 </PolyStyle>
