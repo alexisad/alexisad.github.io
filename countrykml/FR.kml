@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://earth.google.com/kml/2.0">
+    <Document>
+        <Placemark>
+            <MultiGeometry>
+                <Polygon>
+                    <outerBoundaryIs>
+                        <LinearRing>
+                            <coordinates>9.485832,42.615273 9.49472,42.603607 9.457777,42.643326 9.485832,42.615273
+                            </coordinates>
+                        </LinearRing>
+                    </outerBoundaryIs>
+                </Polygon>
+                <Polygon>
+                    <outerBoundaryIs>
+                        <LinearRing>
+                            <coordinates>9.446665,42.67889 9.553333,42.115555 9.180832,41.364716 8.789165,41.558052
+                                8.575832,42.383606 9.29389,42.67555 9.353054,43.003883 9.446665,42.67889
+                            </coordinates>
+                        </LinearRing>
+                    </outerBoundaryIs>
+                </Polygon>
+                <Polygon>
+                    <outerBoundaryIs>
+                        <LinearRing>
+                            <coordinates>-1.19444,45.822495 -1.40167,46.050552 -1.23306,45.964722 -1.19444,45.822495
+                            </coordinates>
+                        </LinearRing>
+                    </outerBoundaryIs>
+                </Polygon>
+                <Polygon>
+                    <outerBoundaryIs>
+                        <LinearRing>
+                            <coordinates>-1.26083,46.156387 -1.553056,46.244995 -1.47444,46.255829 -1.26083,46.156387
+                            </coordinates>
+                        </LinearRing>
+                    </outerBoundaryIs>
+                </Polygon>
+                <Polygon>
+                    <outerBoundaryIs>
+                        <LinearRing>
+                            <coordinates>-2.270833,46.693329 -2.36389,46.698051 -2.385,46.725555 -2.270833,46.693329
+                            </coordinates>
+                        </LinearRing>
+                    </outerBoundaryIs>
+                </Polygon>
+                <Polygon>
+                    <outerBoundaryIs>
+                        <LinearRing>
+                            <coordinates>-2.196945,47.01722 -2.145,46.90583 -2.28472,47.020554 -2.196945,47.01722
+                            </coordinates>
+                        </LinearRing>
+                    </outerBoundaryIs>
+                </Polygon>
+                <Polygon>
+                    <outerBoundaryIs>
+                        <LinearRing>
+                            <coordinates>-3.066667,47.306664 -3.21583,47.302498 -3.258611,47.376106
+                                -3.066667,47.306664
+                            </coordinates>
+                        </LinearRing>
+                    </outerBoundaryIs>
+                </Polygon>
+                <Polygon>
+                    <outerBoundaryIs>
+                        <LinearRing>
+                            <coordinates>-5.055,48.454163 -5.134723,48.458328 -5.064723,48.483055 -5.055,48.454163
+                            </coordinates>
+                        </LinearRing>
+                    </outerBoundaryIs>
+                </Polygon>
+                <Polygon>
+                    <outerBoundaryIs>
+                        <LinearRing>
+                            <coordinates>-3.57667,48.803886 -3.575556,48.812492 -3.56333,48.808609 -3.57667,48.803886
+                            </coordinates>
+                        </LinearRing>
+                    </outerBoundaryIs>
+                </Polygon>
+                <Polygon>
+                    <outerBoundaryIs>
+                        <LinearRing>
+                            <coordinates>2.541667,51.09111 4.165,50.283051 4.149238,49.978371 4.832503,50.16861
+                                4.873055,49.797218 5.80788,49.545044 6.36217,49.459389 8.226078,48.964417
+                                7.578888,48.11972 7.588268,47.58448 6.990555,47.497215 5.966666,46.209442
+                                6.791389,46.434166 7.038054,45.931938 6.79897,45.78067 7.127777,45.257774
+                                6.61976,45.110138 7.031666,44.831383 6.976388,44.284164 7.66222,44.17083
+                                7.528055,43.788605 7.439293,43.757523 7.416111,43.770554 7.387777,43.748604
+                                7.391609,43.727547 6.165277,43.050552 5.031388,43.556664 3.964722,43.540833
+                                3.081388,43.069443 3.177655,42.436806 1.723611,42.509438 1.78172,42.569962
+                                1.445833,42.601944 -0.562222,42.781387 -1.780877,43.359924 -1.036111,44.675278
+                                -1.25028,44.662498 -1.083889,45.564438 -0.53667,44.895554 -0.77667,45.4611
+                                -1.240834,45.70166 -1.06778,45.908882 -1.114635,46.31658 -2.130834,46.838333
+                                -1.984167,47.034439 -2.17083,47.126663 -2.134167,47.278053 -1.728611,47.210831
+                                -2.00333,47.31916 -2.28917,47.238884 -2.54028,47.29666 -2.361111,47.50417
+                                -2.698056,47.637215 -3.106389,47.472221 -4.366389,47.804161 -4.726142,48.04058
+                                -4.18611,48.299995 -4.77778,48.509438 -3.22083,48.870552 -2.685278,48.501663
+                                -1.36889,48.643608 -1.941667,49.72388 -1.26417,49.684166 -1.113889,49.365273
+                                0.424722,49.45166 0.074167,49.526665 1.461111,50.124161 1.625,50.877777
+                                2.541667,51.09111
+                            </coordinates>
+                        </LinearRing>
+                    </outerBoundaryIs>
+                </Polygon>
+            </MultiGeometry>
+
+            <Style>
+                <PolyStyle>
+                    <color>60BFFF00</color>
+                    <fill>1</fill>
+                    <outline>0</outline>
+                </PolyStyle>
+            </Style>
+        </Placemark>
+    </Document>
+</kml>
