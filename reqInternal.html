@@ -52,6 +52,8 @@
 
             //--- redefine the requestInternal
             var tileSize = 256;
+            var imgs = [];
+            var vBlobs = [];
 
             class CustomProvider extends H.map.provider.RemoteTileProvider {
                 requestInternal(x, y, level, onSuccess, onError) {
@@ -73,7 +75,9 @@
                         vBlob = new Blob([r.data], {
                             type: 'image/png'
                         });
+                        vBlobs.push(vBlob);
                         img = new Image();
+                        imgs.push(img);
                         //img.crossOrigin = 'anonymous';
                         img.addEventListener("load", () => {
                             onSuccess(img);
