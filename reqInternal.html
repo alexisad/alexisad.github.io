@@ -74,6 +74,7 @@
                         var img = new Image();
                         img.crossOrigin = 'anonymous';
                         img.addEventListener("load", () => {
+                            URL.revokeObjectURL(this.src);
                             onSuccess(img);
                         });
                         img.src = URL.createObjectURL(vBlob);
