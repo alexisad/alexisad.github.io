@@ -65,13 +65,14 @@
                             /*,
                                     headers: {'customHeader': true}*/
                     });
+                    var img = new Image();
                     axResp.then(function(r) {
                         //onSuccess(r.data);
                         //console.log("r.data: ", r.data);
                         var vBlob = new Blob([r.data], {
                             type: 'image/png'
                         });
-                        var img = new Image();
+                        img = new Image();
                         //img.crossOrigin = 'anonymous';
                         img.addEventListener("load", () => {
                             onSuccess(img);
@@ -79,6 +80,7 @@
                             URL.revokeObjectURL(this.src);
                         });
                         img.src = URL.createObjectURL(vBlob);
+                        URL.revokeObjectURL(img.src);
                     });
                 };
             }
