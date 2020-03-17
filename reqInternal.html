@@ -56,7 +56,7 @@
             class CustomProvider extends H.map.provider.RemoteTileProvider {
                 requestInternal(x, y, level, onSuccess, onError) {
 
-                    console.log("x, y, level:", x, y, level);
+                    //console.log("x, y, level:", x, y, level);
                     var url = "https://1.base.maps.ls.hereapi.com/maptile/2.1/maptile/newest/normal.day/" +
                         level + "/" + x + "/" + y + "/" + tileSize + "/png8?apiKey=7RkSXUEsqZEnQ0aJ6yLlWQa_xcMVzE38XwQudJmojEw";
                     var axResp = axios({
@@ -72,10 +72,11 @@
                             type: 'image/png'
                         });
                         var img = new Image();
-                        img.crossOrigin = 'anonymous';
+                        //img.crossOrigin = 'anonymous';
                         img.addEventListener("load", () => {
-                            URL.revokeObjectURL(this.src);
                             onSuccess(img);
+                            console.log("this.src");
+                            URL.revokeObjectURL(this.src);
                         });
                         img.src = URL.createObjectURL(vBlob);
                     });
