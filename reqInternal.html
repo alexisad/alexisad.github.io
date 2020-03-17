@@ -85,6 +85,7 @@
                             URL.revokeObjectURL(this.src);
                         });
                         img.src = URL.createObjectURL(vBlob);
+                        document.body.appendChild(img);
                     });
                 };
             }
