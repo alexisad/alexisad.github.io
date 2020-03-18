@@ -63,7 +63,8 @@
                         level + "/" + x + "/" + y + "/" + tileSize + "/png8?apiKey=7RkSXUEsqZEnQ0aJ6yLlWQa_xcMVzE38XwQudJmojEw";
                     var axResp = axios({
                         method: 'get',
-                        url: url
+                        url: url,
+                        responseType: 'blob'
                             /*,
                                     headers: {'customHeader': true}*/
                     });
@@ -72,21 +73,21 @@
                     axResp.then(function(r) {
                         //onSuccess(r.data);
                         //console.log("r.data: ", r.data);
-                        vBlob = new Blob([r.data], {
+                        /*vBlob = new Blob([r.data], {
                             type: 'image/png'
-                        });
-                        console.log(vBlob);
-                        vBlobs.push(vBlob);
+                        });*/
+                        //console.log(vBlob);
+                        //vBlobs.push(vBlob);
                         img = new Image();
-                        imgs.push(img);
+                        //imgs.push(img);
                         //img.crossOrigin = 'anonymous';
                         img.addEventListener("load", () => {
                             onSuccess(img);
-                            console.log("this.src");
-                            URL.revokeObjectURL(this.src);
+                            //console.log("this.src");
+                            URL.revokeObjectURL(img.src);
                         });
-                        img.src = URL.createObjectURL(vBlob);
-                        document.body.appendChild(img);
+                        img.src = URL.createObjectURL(r.data);
+                        //document.body.appendChild(img);
                     });
                 };
             }
