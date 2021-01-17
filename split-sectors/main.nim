@@ -1,7 +1,9 @@
 # nim -r -d:ssl c main.nim
+# nim -r --gc:orc -d:ssl c main.nim
 # nim -r --gc:orc -d:ssl -d:release c main.nim
 import tile, types, utils
 import httpclient, strutils, sequtils, strformat, uri, json, tables, parsecsv, streams, sugar
+import jsony
 
 const
     apikey = "***"
@@ -28,8 +30,8 @@ proc getBorderPoints(hrCoord: string): seq[Point] =
 
 const sectorBorderPonts = getBorderPoints(hrCoordReal)
 
-proc parseDistricts(d: string): TableRef[int, District] =
-    result = newTable[int, District]()
+proc parseDistricts(d: string): TableRef[string, District] =
+    result = newTable[string, District]()
     var
         parser: CsvParser
     let
@@ -38,7 +40,7 @@ proc parseDistricts(d: string): TableRef[int, District] =
     parser.readHeaderRow()
     while parser.readRow():
         let
-            id = parser.rowEntry("ADMIN_PLACE_ID").parseInt
+            id = parser.rowEntry("ADMIN_PLACE_ID")
             #arrLat = (parser.rowEntry("LAT").split ",").map(proc (item: string): string = (if item == "": "0" else: item))
             arrLat = (parser.rowEntry("LAT").split ",").map((item) => (if item == "": "0" else: item))
             arrLng = (parser.rowEntry("LON").split ",").map((item) => (if item == "": "0" else: item))
@@ -70,7 +72,7 @@ proc parseDistricts(d: string): TableRef[int, District] =
 
 
 
-proc getDistricts(d: string): TableRef[int, District] =
+proc getDistricts(d: string): TableRef[string, District] =
     var
         client = newHttpClient()
         cityIds: seq[string]
@@ -149,7 +151,7 @@ proc getDistricts(d: string): TableRef[int, District] =
             arrAllPolyAdmin = arrAllPolyAdmin.concat(resPolyAdmin.split "\l")
     let tblDistrict = parseDistricts(arrAllPolyAdmin.join "\n")
     #del districts outside the border
-    var forDel: seq[int]
+    var forDel: seq[string]
     for k,v in tblDistrict:
         for p in v.outerPoints:
             if not p.isPointInPolygon sectorBorderPonts:
@@ -224,7 +226,112 @@ proc getRoads() =
     roadsFile.write(data.join ("\n"))
     roadsFile.close()
 
+proc getFcs(): seq[(string, string)] =
+    for i in 1..5:
+        result.add (fmt"_FC{i}", "")
 
+proc getIndex(xs: seq[string], s: string): int =
+    for i,x in xs:
+        if x == s:
+            return i
+    result = -1
+
+
+proc parseAdmins(x: string): seq[string] =
+    let districtIds0 = x.split(",")
+        .map(item => (
+            let arrLrD = item.split ";"
+            let lrD = arrLrD[0].strip
+            if lrD == "":
+                "0"
+            else:
+                lrD
+        ))
+    let cityId = districtIds0[3].parseInt
+    result = collect(newSeq):
+        for i,d in districtIds0:
+            if d.toLowerAscii == "null":
+                ""
+            else:
+                if i != 3: #not city
+                    $(cityId + d.parseInt)
+                else:
+                    d
+
+template readHead(b: untyped): untyped =
+    header = line.split '\t'
+    idxLinkId = header.getIndex "LINK_ID"
+    willHead = false
+    b
+
+
+proc filterRoads(strm: Stream, tblDistrict: TableRef[string, District]) =
+    var
+        exceptsLinks: seq[string]
+        layer: string
+        willHead = false
+        header: seq[string]
+        idxPlIds, idxLinkId: int
+        tblRoadLinks: TableRef[string, Road]
+    for line in strm.lines():
+        let arrLine = line.split '\t'
+        if arrLine[0] == "Meta:":
+            layer = arrLine[1].multiReplace getFcs()
+            willHead = true
+            continue
+        if layer == "ROAD_ADMIN":
+            if willHead:
+                readHead:
+                    idxPlIds = header.getIndex "ADMIN_PLACE_IDS"
+            else:
+                let arrRow = line.split '\t'
+                let districtId = (parseAdmins arrRow[idxPlIds])[4]
+                if not tblDistrict.hasKey districtId:
+                    exceptsLinks.add arrRow[idxLinkId].strip
+    for line in strm.lines():
+        let arrLine = line.split '\t'
+        if arrLine[0] == "Meta:":
+            layer = arrLine[1].multiReplace getFcs()
+            willHead = true
+            continue
+        case layer
+        of "ROAD_ADMIN":
+            if willHead:
+                readHead:
+                    discard
+            else:
+                let
+                    arrRow = line.split '\t'
+                    linkId = arrRow[idxLinkId].strip
+                if exceptsLinks.contains linkId:
+                    continue
+                else:
+                    discard tblRoadLinks.hasKeyOrPut(linkId, new Road)
+                    idxPlIds = header.getIndex "ADMIN_PLACE_IDS"
+                    let
+                        districtId = (parseAdmins arrRow[idxPlIds])[4]
+                        cityId = (parseAdmins arrRow[idxPlIds])[3]
+                    tblRoadLinks[linkId].linkId = linkId
+                    tblRoadLinks[linkId].disstrictId = districtId
+                    tblRoadLinks[linkId].cityId = cityId
+        of "ROAD_GEOM":
+            if willHead:
+                readHead:
+                    discard
+            else:
+                let
+                    arrRow = line.split '\t'
+                    linkId = arrRow[idxLinkId].strip
+                if exceptsLinks.contains linkId:
+                    continue
+                else:
+                    let
+                        idxLat = header.getIndex "LAT"
+                        idxLon = header.getIndex "LON"
+        else:
+            discard
+        #of "name":
+    strm.close
 
 
 proc main() =
@@ -239,6 +346,10 @@ proc main() =
         visDistrFile.write(data.join ("\n"))
         visDistrFile.close()
     #getRoads()
+    #let tblDistrict = getDistricts border
+    #writeFile("tblDistrict.json", tblDistrict.toJson)
+    let tblDistrict = (readFile "tblDistrict.json").fromJson(TableRef[string, District])
+    filterRoads(openFileStream "roads.txt", tblDistrict)
 
 
 
