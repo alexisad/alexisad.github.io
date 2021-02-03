@@ -74,6 +74,7 @@ for (var i = 0; i < vars.length; i++) {
 var latitud = query_string.lat;
 var longitud = query_string.long;
 var apiKey = query_string.apiKey;
+var vector = query_string.vector == "false" ? false : true;
 
 /**
  * Boilerplate map initialization code starts below:
@@ -86,14 +87,15 @@ var platform = new H.service.Platform({
 });
 
 var defaultLayers = platform.createDefaultLayers();
+var mapType = vector ? defaultLayers.vector.normal.map : defaultLayers.raster.normal.map
 //Step 2: initialize a map - this map is centered over Boston
 var map = new H.Map(document.getElementById('map'),
-    defaultLayers.raster.normal.map, {
+    mapType, {
         center: {
             lat: latitud,
             lng: longitud
         },
-        engineType: H.map.render.RenderEngine.EngineType.P2D,
+        engineType: vector ? H.map.render.RenderEngine.EngineType.WEBGL : H.map.render.RenderEngine.EngineType.P2D,
         zoom: 12,
         pixelRatio: window.devicePixelRatio || 1
     });
@@ -104,7 +106,7 @@ window.addEventListener('resize', function() {
     map.getViewPort().resize();
 });
 window.setTimeout(function() {
-    alert("time2");
+    //alert("time2");
     map.getViewPort().resize();
 }, 5000);
 

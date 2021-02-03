@@ -258,11 +258,20 @@ proc parseAdmins(x: string): seq[string] =
                 else:
                     d
 
+
 template readHead(b: untyped): untyped =
-    header = line.split '\t'
-    idxLinkId = header.getIndex "LINK_ID"
-    willHead = false
-    b
+    if willHead:
+        header = line.split '\t'
+        idxLinkId = header.getIndex "LINK_ID"
+        willHead = false
+    else:
+        let
+            arrRow = line.split '\t'
+            linkId = arrRow[idxLinkId].strip
+        if exceptsLinks.contains linkId:
+            continue
+        else:
+            b
 
 
 proc filterRoads(strm: Stream, tblDistrict: TableRef[string, District]) =
@@ -281,8 +290,10 @@ proc filterRoads(strm: Stream, tblDistrict: TableRef[string, District]) =
             continue
         if layer == "ROAD_ADMIN":
             if willHead:
-                readHead:
-                    idxPlIds = header.getIndex "ADMIN_PLACE_IDS"
+                header = line.split '\t'
+                idxLinkId = header.getIndex "LINK_ID"
+                willHead = false
+                idxPlIds = header.getIndex "ADMIN_PLACE_IDS"
             else:
                 let arrRow = line.split '\t'
                 let districtId = (parseAdmins arrRow[idxPlIds])[4]
@@ -296,24 +307,15 @@ proc filterRoads(strm: Stream, tblDistrict: TableRef[string, District]) =
             continue
         case layer
         of "ROAD_ADMIN":
-            if willHead:
-                readHead:
-                    discard
-            else:
+            readHead:
+                discard tblRoadLinks.hasKeyOrPut(linkId, new Road)
+                idxPlIds = header.getIndex "ADMIN_PLACE_IDS"
                 let
-                    arrRow = line.split '\t'
-                    linkId = arrRow[idxLinkId].strip
-                if exceptsLinks.contains linkId:
-                    continue
-                else:
-                    discard tblRoadLinks.hasKeyOrPut(linkId, new Road)
-                    idxPlIds = header.getIndex "ADMIN_PLACE_IDS"
-                    let
-                        districtId = (parseAdmins arrRow[idxPlIds])[4]
-                        cityId = (parseAdmins arrRow[idxPlIds])[3]
-                    tblRoadLinks[linkId].linkId = linkId
-                    tblRoadLinks[linkId].disstrictId = districtId
-                    tblRoadLinks[linkId].cityId = cityId
+                    districtId = (parseAdmins arrRow[idxPlIds])[4]
+                    cityId = (parseAdmins arrRow[idxPlIds])[3]
+                tblRoadLinks[linkId].linkId = linkId
+                tblRoadLinks[linkId].disstrictId = districtId
+                tblRoadLinks[linkId].cityId = cityId
         of "ROAD_GEOM":
             if willHead:
                 readHead:
