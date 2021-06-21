@@ -73,7 +73,7 @@
         var platform = new H.service.Platform({
             apikey: apikey
         });
-        var defaultLayers = platform.createDefaultLayers({'baseUrl': new H.service.Url("https", "api.here.com")});
+        var defaultLayers = platform.createDefaultLayers(/*{'baseUrl': new H.service.Url("https", "api.here.com")}*/);
 
         //Step 2: initialize a map
         var map = new H.Map(document.getElementById('map'),
@@ -95,6 +95,20 @@
 
         // Now use the map as required...
         setStyle(map);
+		
+		// Assumption: the platform is instantiated
+		geocoder = platform.getGeocodingService();
+
+		var geocodingParams = {
+			  searchText: '425 W Randolph Street, Chicago'
+			},
+			onResult = function(result) {
+			  console.log(result.Response.View[0].Result[0].Location.DisplayPosition);
+			},
+			onError = function(error) {
+			   console.log(error);
+			};
+		geocoder.geocode(geocodingParams, onResult, onError);
     </script>
 </body>
 
