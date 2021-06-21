@@ -73,7 +73,7 @@
         var platform = new H.service.Platform({
             apikey: apikey
         });
-        var defaultLayers = platform.createDefaultLayers();
+        var defaultLayers = platform.createDefaultLayers({'baseUrl': new H.service.Url("https", "api.here.com")});
 
         //Step 2: initialize a map
         var map = new H.Map(document.getElementById('map'),
