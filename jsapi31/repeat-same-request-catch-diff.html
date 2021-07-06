@@ -13,7 +13,7 @@
 
 		function reqListener() {
 			attempt++;
-			if (attempt >= cntAttempt) {
+			if (attempt > cntAttempt) {
 				return;
 			}
 			console.log(this.responseText);
@@ -24,9 +24,9 @@
 				hashResp = h;
 			} else {
 				if (h != hashResp) {
-					window.document.write("attempt:" + attempt + ", result is not the same! count items: " + items.length + "<br/>");
+					window.document.write("attempt:" + attempt + ", result is not the same! - count items: " + items.length + ", hash:" + h + "<br/>");
 				} else {
-					window.document.write("attempt:" + attempt + ", result the same. count items: " + items.length + "<br/>");
+					window.document.write("attempt:" + attempt + ", result the same. - count items: " + items.length + ", hash:" + h + "<br/>");
 				}
 			}
 			setTimeout(() => runReq(query.url), rndBetween(100, 1000));
@@ -41,7 +41,6 @@
 
 		runReq(query.url);
 		//console.log("rnd:", rndBetween(100, 1000));
-		//https%3A%2F%2Fgeocode.search.hereapi.com%2Fv1%2Fgeocode%3FapiKey%3D8PLJfm3l8IbHKnYd5ks-Oxv0eLMEh8Tgsa70SZFBfSs%26lang%3Den%26q%3DIT%2C%252045023%2520Costa%2520di%2520Rovigo%2C%2520Viale%2520delle%2520Industrie%2520100%26in%3DcountryCode%3AITA
 
 
 		function rndBetween(start, end) {
