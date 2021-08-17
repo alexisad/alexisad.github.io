@@ -22,6 +22,7 @@ proc toTileXY*(fromLevel, fromTileX, fromTileY, toLevel: int): seq[(int, int)] =
         result.add tileXY
 
 
+#calculate TileXYs which cover polygon
 proc tilesByPolygon*(level: int, points: seq[Point]): seq[TileId] =
     var
         maxTileX, maxTileY = int.low

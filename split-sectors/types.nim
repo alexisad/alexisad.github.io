@@ -9,6 +9,14 @@ type
         outerPoints*: seq[Point]
     TileId* = object
         x*, y*: int
+    TileLayerSet* = ref object of Rootref
+        layers*: seq[string]
+        levels*: seq[int]
+        tileXys*: seq[string]
+    TileLayerSetDistribBy* = ref object of Rootref
+        layrs*: seq[seq[string]]
+        levels*: seq[seq[int]]
+        tileXys*: seq[seq[string]]
     RoadLink* = ref object of Rootref
         linkId*: string
         name*: seq[StreetName]
