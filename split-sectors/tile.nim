@@ -1,4 +1,5 @@
 import math
+import types, utils
 
 proc getCoord*(level, tileX, tileY: int): (float, float) =
     let tileSize = 180 / (2 ^ level)
@@ -19,3 +20,22 @@ proc toTileXY*(fromLevel, fromTileX, fromTileY, toLevel: int): seq[(int, int)] =
                 result.add (tileXY[0] + x, tileXY[1] + y)
     else:
         result.add tileXY
+
+
+proc tilesByPolygon*(level: int, points: seq[Point]): seq[TileId] =
+    var
+        maxTileX, maxTileY = int.low
+        minTileX, minTileY = int.high
+    for p in points:
+        let txy = getTileXY(level, p.y, p.x)
+        if txy[0] < minTileX:
+            minTileX = txy[0]
+        if txy[0] > maxTileX:
+            maxTileX = txy[0]
+        if txy[1] < minTileY:
+            minTileY = txy[1]
+        if txy[1] > maxTileY:
+            maxTileY = txy[1]
+    for tx in minTileX..maxTileX:
+        for ty in minTileY..maxTileY:
+            result.add TileId(x: tx, y: ty)
