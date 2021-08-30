@@ -14,6 +14,10 @@ type
         pdeName*: seq[PdeName]
         polygonOuter*: seq[float]
         outerPoints*: seq[Point]
+    Admin* = ref object of Rootref
+        city*: City
+        postalCode*: string
+        district*: District
     AdminStreet* = ref object of Rootref
         city*: City
         postalCode*: string
@@ -39,6 +43,8 @@ type
         disstrictId*: string
         cityId*: string
         coords*: seq[Point]
+        refNodeCoord*: Point
+        nonRefNodeCoord*: Point
         linkLen*: float
         refLinks*: seq[string]
         nonRefLinks*: seq[string]
@@ -66,10 +72,13 @@ proc hash*(x: LangCode): Hash =
     result = string(x).hash
     result = !$result
 
+proc hash*(x: Admin): Hash =
+    result = x.postalCode.hash !& x.city.pdeName.encodeName.hash !&
+                x.district.pdeName.encodeName.hash
+    result = !$result
+
+
 proc hash*(x: AdminStreet): Hash =
-    ## Piggyback on the already available string hash proc.
-    ##
-    ## Without this proc nothing works!
     result = x.postalCode.hash !& x.city.pdeName.encodeName.hash !&
                 x.district.pdeName.encodeName.hash !& x.street.hash
     result = !$result

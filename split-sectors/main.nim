@@ -243,6 +243,16 @@ proc filterRoadLinks(strm: Stream, tblDistrict: TableRef[string, District]): Are
                     idxLat = header.getIndex "LAT"
                     idxLon = header.getIndex "LON"
                 area.roadLinks[linkId].coords = parseCoords(arrRow[idxLat], arrRow[idxLon])
+        of "LINK":
+            #echo "ROAD_GEOM!!!!"
+            readHead:
+                let
+                    idxLat = header.getIndex "LAT"
+                    idxLon = header.getIndex "LON"
+                    coords = parseCoords(arrRow[idxLat], arrRow[idxLon])
+                    link = area.roadLinks[linkId]
+                link.refNodeCoord = coords[0]
+                link.nonRefNodeCoord = coords[1]
         of "ROAD_NAME":
             #echo "ROAD_NAME!!!!"
             readHead:
@@ -258,6 +268,65 @@ proc filterRoadLinks(strm: Stream, tblDistrict: TableRef[string, District]): Are
         #of "name":
     strm.close
     result = area
+
+
+proc splitLinksByStreet(area: Area): TableRef[AdminStreet, seq[RoadLink]] =
+    let tblRoadLinks = area.roadLinks
+    var
+        tblAdminStrKeys = newTable[Hash, AdminStreet]()
+    result = newTable[AdminStreet, seq[RoadLink]]()
+    for k,v in tblRoadLinks.pairs:
+        let strName = v.name.encodeName
+        if strName == "":
+            continue
+        var admStr = AdminStreet(
+                        postalCode: v.postalCode,
+                        city: area.cities[v.cityId],
+                        district: area.districts[v.disstrictId],
+                        street: strName
+                )
+        if not tblAdminStrKeys.hasKeyOrPut(admStr.hash, admStr):
+            result[admStr] = @[]
+        admStr = tblAdminStrKeys[admStr.hash]
+        result[admStr].add v
+
+
+proc splitStreetsByAdmin(admStr: TableRef[AdminStreet, seq[RoadLink]]): TableRef[Admin, seq[AdminStreet]] =
+    result = newTable[Admin, seq[AdminStreet]]()
+    var
+        tblAdminKeys = newTable[Hash, Admin]()
+    for k in admStr.keys:
+        var adm = Admin(
+                postalCode: k.postalCode,
+                city: k.city,
+                district: k.district
+            )
+        if not tblAdminKeys.hasKeyOrPut(adm.hash, adm):
+            result[adm] = @[]
+        adm = tblAdminKeys[adm.hash]
+        result[adm].add k
+
+
+
+proc findEdgeStreet(tblAdminStreet: TableRef[AdminStreet, seq[RoadLink]]): AdminStreet =
+    var
+        minLat = float.high
+        minLng = float.high
+    for k,v in tblAdminStreet.pairs:
+        for link in v:
+            if minLat > link.refNodeCoord.y:
+                minLat = link.refNodeCoord.y
+                result = k
+            if minLat > link.nonRefNodeCoord.y:
+                minLat = link.nonRefNodeCoord.y
+                result = k
+            if minLng > link.refNodeCoord.x:
+                minLng = link.refNodeCoord.x
+                result = k
+            if minLng > link.nonRefNodeCoord.x:
+                minLng = link.nonRefNodeCoord.x
+                result = k
+
 
 
 proc main() =
@@ -304,25 +373,13 @@ proc main() =
         echo tblRoadLinks["1200131157"].name.encodeName
         echo tblRoadLinks["990689333"].name.encodeName
         echo tblRoadLinks["1157468789"].name.encodeName
-        var
-            tblAdminStrKeys = newTable[Hash, AdminStreet]()
-            tblAdminStreet = newTable[AdminStreet, seq[RoadLink]]()
-        for k,v in tblRoadLinks.pairs:
-            let strName = v.name.encodeName
-            if strName == "":
-                continue
-            var admStr = AdminStreet(
-                            postalCode: v.postalCode,
-                            city: area.cities[v.cityId],
-                            district: area.districts[v.disstrictId],
-                            street: strName
-                    )
-            if not tblAdminStrKeys.hasKeyOrPut(admStr.hash, admStr):
-                tblAdminStreet[admStr] = @[]
-            admStr = tblAdminStrKeys[admStr.hash]
-            tblAdminStreet[admStr].add v
-        for k,v in tblAdminStreet.pairs:
-            if k.city.pdeName.encodeName == "Hanau" and k.postalCode == "63452":
-                echo "admStr: city:", k.city.pdeName.encodeName, ", district:", k.district.pdeName.encodeName, ", street:", k.street, ", hash:", k.hash
+        let
+            tblAdminStreet = area.splitLinksByStreet()
+            tblAdminWithStreet = tblAdminStreet.splitStreetsByAdmin()
+        #for k,v in tblAdminStreet.pairs:
+            #if k.city.pdeName.encodeName == "Hanau" and k.postalCode == "63452":
+                #echo "admStr: city:", k.city.pdeName.encodeName, ", district:", k.district.pdeName.encodeName, ", street:", k.street, ", hash:", k.hash
+        let edgeStreet = tblAdminStreet.findEdgeStreet()
+        echo "edgeStreet:", edgeStreet.street
 
 main()
