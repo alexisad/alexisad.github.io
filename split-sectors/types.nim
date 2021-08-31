@@ -23,6 +23,7 @@ type
         postalCode*: string
         district*: District
         street*: string
+        roadlinks*: seq[RoadLink]
     TileId* = object
         x*, y*: int
     TileLayerSet* = ref object of Rootref

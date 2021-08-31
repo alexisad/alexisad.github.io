@@ -249,10 +249,14 @@ proc filterRoadLinks(strm: Stream, tblDistrict: TableRef[string, District]): Are
                 let
                     idxLat = header.getIndex "LAT"
                     idxLon = header.getIndex "LON"
+                    idxRefs = header.getIndex "REF_NODE_NEIGHBOR_LINKS"
+                    idxNonRefs = header.getIndex "NONREF_NODE_NEIGHBOR_LINKS"
                     coords = parseCoords(arrRow[idxLat], arrRow[idxLon])
                     link = area.roadLinks[linkId]
                 link.refNodeCoord = coords[0]
                 link.nonRefNodeCoord = coords[1]
+                link.refLinks = arrRow[idxRefs].replace("-", "").split ","
+                link.nonRefLinks = arrRow[idxNonRefs].replace("-", "").split ","
         of "ROAD_NAME":
             #echo "ROAD_NAME!!!!"
             readHead:
@@ -283,11 +287,13 @@ proc splitLinksByStreet(area: Area): TableRef[AdminStreet, seq[RoadLink]] =
                         postalCode: v.postalCode,
                         city: area.cities[v.cityId],
                         district: area.districts[v.disstrictId],
-                        street: strName
+                        street: strName,
+                        roadLinks: @[]
                 )
         if not tblAdminStrKeys.hasKeyOrPut(admStr.hash, admStr):
             result[admStr] = @[]
         admStr = tblAdminStrKeys[admStr.hash]
+        admStr.roadlinks.add v
         result[admStr].add v
 
 
@@ -308,24 +314,24 @@ proc splitStreetsByAdmin(admStr: TableRef[AdminStreet, seq[RoadLink]]): TableRef
 
 
 
-proc findEdgeStreet(tblAdminStreet: TableRef[AdminStreet, seq[RoadLink]]): AdminStreet =
+proc findEdgeStreet(seqAdmStr: seq[AdminStreet]): AdminStreet =
     var
         minLat = float.high
         minLng = float.high
-    for k,v in tblAdminStreet.pairs:
-        for link in v:
+    for admStr in seqAdmStr:
+        for link in admStr.roadLinks:
             if minLat > link.refNodeCoord.y:
                 minLat = link.refNodeCoord.y
-                result = k
+                result = admStr
             if minLat > link.nonRefNodeCoord.y:
                 minLat = link.nonRefNodeCoord.y
-                result = k
+                result = admStr
             if minLng > link.refNodeCoord.x:
                 minLng = link.refNodeCoord.x
-                result = k
+                result = admStr
             if minLng > link.nonRefNodeCoord.x:
                 minLng = link.nonRefNodeCoord.x
-                result = k
+                result = admStr
 
 
 
@@ -356,7 +362,7 @@ proc main() =
         sData.write(data)
         sData.close
         #writeFile("tblDistrict.json", tblDistrict.toJson)
-    when false:
+    when true:
         #let tblDistrict = (readFile "tblDistrict.json").fromJson(TableRef[string, District])
         let tblDistrict = (openFileStream "tblDistrict.data").readAll().uncompress().fromFlatty(TableRef[string, District])
         var area = filterRoadLinks(openFileStream "roadLinks.txt", tblDistrict)
@@ -365,7 +371,7 @@ proc main() =
         sData.write(data)
         sData.close
         #tblRoadLinks.clear
-    when true:
+    when false:
         let sDataR = openFileStream "area.data"
         let area = sDataR.readAll().uncompress().fromFlatty(Area)
         let tblRoadLinks = area.roadLinks
@@ -379,7 +385,9 @@ proc main() =
         #for k,v in tblAdminStreet.pairs:
             #if k.city.pdeName.encodeName == "Hanau" and k.postalCode == "63452":
                 #echo "admStr: city:", k.city.pdeName.encodeName, ", district:", k.district.pdeName.encodeName, ", street:", k.street, ", hash:", k.hash
-        let edgeStreet = tblAdminStreet.findEdgeStreet()
-        echo "edgeStreet:", edgeStreet.street
+        for adm, admStr in tblAdminWithStreet:
+            let edgeStreet = admStr.findEdgeStreet()
+            echo "adm:", [adm.postalCode, adm.city.pdeName.encodeName, adm.district.pdeName.encodeName, edgeStreet.street].join(", ")
+            #echo "edgeStreet:", edgeStreet.street
 
 main()
