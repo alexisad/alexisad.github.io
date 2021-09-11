@@ -4,6 +4,9 @@ import utils, strutils, tables, unicode, sugar, hashes
 export hashes
 
 type
+    Sector* = ref object of Rootref
+        name*: string
+        streets*: seq[AdminStreet]
     City* = ref object of Rootref
         id*: string
         name*: string
@@ -18,7 +21,7 @@ type
         city*: City
         postalCode*: string
         district*: District
-    AdminStreet* = ref object of Rootref
+    AdminStreet* = ref object
         city*: City
         postalCode*: string
         district*: District
@@ -83,6 +86,10 @@ proc hash*(x: AdminStreet): Hash =
     result = x.postalCode.hash !& x.city.pdeName.encodeName.hash !&
                 x.district.pdeName.encodeName.hash !& x.street.hash
     result = !$result
+
+proc hashAdm*(x: AdminStreet): Hash =
+    let adm = Admin(postalCode: x.postalCode, city: x.city, district: x.district)
+    adm.hash
 
 proc getEnumTypeStreet(x: char): PdeNameType =
     case x

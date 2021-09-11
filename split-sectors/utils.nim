@@ -1,4 +1,4 @@
-import sugar, sequtils, strutils, strformat
+import sugar, sequtils, strutils, strformat, math
 
 type
     Point* = object
@@ -15,6 +15,9 @@ proc isPointInPolygon*(testPoint: Point, polygPoints: openArray[Point]): bool =
                 result = not result
         j = i
 
+
+proc distance*(p1, p2: Point): float =
+    sqrt ((p2.x - p1.x).pow(2) + (p2.y - p1.y).pow(2))
 
 proc parseCoords*(lats, lngs: string): seq[Point] =
     let

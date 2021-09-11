@@ -3,6 +3,7 @@
 # nim -r --gc:orc -d:ssl -d:release c main.nim
 import tile, types, utils, pde
 import httpclient, strutils, sequtils, strformat, uri, json, tables, parsecsv, std/streams, sugar
+import algorithm
 import flatty, supersnappy
 
 const
@@ -314,7 +315,7 @@ proc splitStreetsByAdmin(admStr: TableRef[AdminStreet, seq[RoadLink]]): TableRef
 
 
 
-proc findEdgeStreet(seqAdmStr: seq[AdminStreet]): AdminStreet =
+proc findEdgeStreet(seqAdmStr: seq[AdminStreet]): tuple[minCoord: Point, admStr: AdminStreet] =
     var
         minLat = float.high
         minLng = float.high
@@ -322,16 +323,66 @@ proc findEdgeStreet(seqAdmStr: seq[AdminStreet]): AdminStreet =
         for link in admStr.roadLinks:
             if minLat > link.refNodeCoord.y:
                 minLat = link.refNodeCoord.y
-                result = admStr
+                result = (link.refNodeCoord, admStr)
             if minLat > link.nonRefNodeCoord.y:
                 minLat = link.nonRefNodeCoord.y
-                result = admStr
-            if minLng > link.refNodeCoord.x:
-                minLng = link.refNodeCoord.x
-                result = admStr
-            if minLng > link.nonRefNodeCoord.x:
-                minLng = link.nonRefNodeCoord.x
-                result = admStr
+                result = (link.nonRefNodeCoord, admStr)
+            when false:
+                if minLng > link.refNodeCoord.x:
+                    minLng = link.refNodeCoord.x
+                    result = admStr
+                if minLng > link.nonRefNodeCoord.x:
+                    minLng = link.nonRefNodeCoord.x
+                    result = admStr
+
+
+proc mapLink2AdminStreet(admStrs: TableRef[AdminStreet, seq[RoadLink]]): TableRef[string, AdminStreet] =
+    result = newTable[string, AdminStreet]()
+    for k,v in admStrs:
+        for link in v:
+            discard result.hasKeyOrPut(link.linkId, k)
+
+
+
+proc nearestStreets(admStr: AdminStreet, minCoord: Point,
+                    tblLink2AdmStr: TableRef[string, AdminStreet],
+                    numSector: var int,
+                    sectors: var TableRef[string, Sector],
+                    street2Sector: var TableRef[AdminStreet, Sector]) =
+    proc findConnectedStrs(link: RoadLink, byLnks: seq[string]): seq[tuple[distance: float, admStr: AdminStreet]] =
+        for lnkId in byLnks:
+            #echo "lnkId:", lnkId
+            if not tblLink2AdmStr.hasKey(lnkId):
+                continue
+            let refAdmStr = tblLink2AdmStr[lnkId]
+            if street2Sector.hasKey(tblLink2AdmStr[lnkId]):
+                continue # already in some sector - ignore it
+            if admStr.hashAdm != refAdmStr.hashAdm:
+                continue # we need only street in the same admin area
+            if admStr.hash == refAdmStr.hash:
+                continue # we need only other street
+            let d = link.refNodeCoord.distance minCoord
+            result.add (distance: d, admStr: refAdmStr)
+    let
+        cityName = admStr.city.pdeName.encodeName
+        dn = admStr.district.pdeName.encodeName
+        distrName =
+            if dn != cityName: dn else: ""
+        sectorName = fmt"{admStr.postalCode}-{numSector} {cityName} {distrName}".strip
+    discard sectors.hasKeyOrPut(sectorName, Sector(name: sectorName, streets: newSeq[AdminStreet]()))
+    var sector = sectors[sectorName]
+    sector.streets.add admStr
+    discard street2Sector.hasKeyOrPut(admStr, sector)
+    if sector.streets.len > 7:
+        inc numSector
+    var dstncStr: seq[tuple[distance: float, admStr: AdminStreet]]
+    for link in admStr.roadLinks:
+        dstncStr = dstncStr.concat findConnectedStrs(link, link.refLinks)
+        dstncStr = dstncStr.concat findConnectedStrs(link, link.nonRefLinks)
+    dstncStr = dstncStr.sortedByIt(it.distance)
+    for dStr in dstncStr:
+        dStr.admStr.nearestStreets(minCoord, tblLink2AdmStr, numSector, sectors, street2Sector)
+    echo "distance+street:", dstncStr[0].admStr.street
 
 
 
@@ -362,7 +413,7 @@ proc main() =
         sData.write(data)
         sData.close
         #writeFile("tblDistrict.json", tblDistrict.toJson)
-    when true:
+    when false:
         #let tblDistrict = (readFile "tblDistrict.json").fromJson(TableRef[string, District])
         let tblDistrict = (openFileStream "tblDistrict.data").readAll().uncompress().fromFlatty(TableRef[string, District])
         var area = filterRoadLinks(openFileStream "roadLinks.txt", tblDistrict)
@@ -371,7 +422,7 @@ proc main() =
         sData.write(data)
         sData.close
         #tblRoadLinks.clear
-    when false:
+    when true:
         let sDataR = openFileStream "area.data"
         let area = sDataR.readAll().uncompress().fromFlatty(Area)
         let tblRoadLinks = area.roadLinks
@@ -382,12 +433,19 @@ proc main() =
         let
             tblAdminStreet = area.splitLinksByStreet()
             tblAdminWithStreet = tblAdminStreet.splitStreetsByAdmin()
+            tblLink2AdminStreet = tblAdminStreet.mapLink2AdminStreet()
         #for k,v in tblAdminStreet.pairs:
             #if k.city.pdeName.encodeName == "Hanau" and k.postalCode == "63452":
                 #echo "admStr: city:", k.city.pdeName.encodeName, ", district:", k.district.pdeName.encodeName, ", street:", k.street, ", hash:", k.hash
         for adm, admStr in tblAdminWithStreet:
-            let edgeStreet = admStr.findEdgeStreet()
+            let (minCoord, edgeStreet) = admStr.findEdgeStreet()
             echo "adm:", [adm.postalCode, adm.city.pdeName.encodeName, adm.district.pdeName.encodeName, edgeStreet.street].join(", ")
             #echo "edgeStreet:", edgeStreet.street
+            var
+                sectors = newTable[string, Sector]()
+                street2Sector = newTable[AdminStreet, Sector]()
+                numSector = 1
+            edgeStreet.nearestStreets(minCoord, tblLink2AdminStreet, numSector, sectors, street2Sector)
+            break
 
 main()
