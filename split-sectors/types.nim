@@ -4,20 +4,20 @@ import utils, strutils, tables, unicode, sugar, hashes
 export hashes
 
 type
-    Sector* = ref object of Rootref
+    Sector* = ref object
         name*: string
         streets*: seq[AdminStreet]
-    City* = ref object of Rootref
+    City* = ref object
         id*: string
         name*: string
         pdeName*: seq[PdeName]
-    District* = ref object of Rootref
+    District* = ref object
         id*: string
         name*: string
         pdeName*: seq[PdeName]
         polygonOuter*: seq[float]
         outerPoints*: seq[Point]
-    Admin* = ref object of Rootref
+    Admin* = ref object
         city*: City
         postalCode*: string
         district*: District
@@ -29,19 +29,19 @@ type
         roadlinks*: seq[RoadLink]
     TileId* = object
         x*, y*: int
-    TileLayerSet* = ref object of Rootref
+    TileLayerSet* = ref object
         layers*: seq[string]
         levels*: seq[int]
         tileXys*: seq[string]
-    TileLayerSetDistribBy* = ref object of Rootref
+    TileLayerSetDistribBy* = ref object
         layrs*: seq[seq[string]]
         levels*: seq[seq[int]]
         tileXys*: seq[seq[string]]
-    Area* = ref object of Rootref
+    Area* = ref object
         roadLinks*: TableRef[string, RoadLink]
         cities*: TableRef[string, City]
         districts*: TableRef[string, District]
-    RoadLink* = ref object of Rootref
+    RoadLink* = ref object
         linkId*: string
         name*: seq[PdeName]
         disstrictId*: string
@@ -59,7 +59,7 @@ type
         synonym = "S - synonym", unknown = "unknown"
     PdeNameKind* = enum
         name, translit, phoneme
-    PdeName* = ref object of Rootref
+    PdeName* = ref object
         name*: string
         lang*: LangCode
         nameType*: PdeNameType

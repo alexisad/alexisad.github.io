@@ -2,8 +2,8 @@
 # nim -r --gc:orc -d:ssl c main.nim
 # nim -r --gc:orc -d:ssl -d:release c main.nim
 import tile, types, utils, pde
-import httpclient, strutils, sequtils, strformat, uri, json, tables, parsecsv, std/streams, sugar
-import algorithm
+import std / [httpclient, strutils, sequtils, strformat, uri, json, tables, parsecsv, streams, sugar]
+import std / [algorithm]
 import flatty, supersnappy
 
 const
@@ -256,8 +256,8 @@ proc filterRoadLinks(strm: Stream, tblDistrict: TableRef[string, District]): Are
                     link = area.roadLinks[linkId]
                 link.refNodeCoord = coords[0]
                 link.nonRefNodeCoord = coords[1]
-                link.refLinks = arrRow[idxRefs].replace("-", "").split ","
-                link.nonRefLinks = arrRow[idxNonRefs].replace("-", "").split ","
+                link.refLinks = if arrRow[idxRefs] == "": @[] else: arrRow[idxRefs].replace("-", "").split ","
+                link.nonRefLinks = if arrRow[idxNonRefs] == "": @[] else: arrRow[idxNonRefs].replace("-", "").split ","
         of "ROAD_NAME":
             #echo "ROAD_NAME!!!!"
             readHead:
@@ -343,26 +343,31 @@ proc mapLink2AdminStreet(admStrs: TableRef[AdminStreet, seq[RoadLink]]): TableRe
             discard result.hasKeyOrPut(link.linkId, k)
 
 
+proc findConnectedStrs(admStr: AdminStreet, minCoord: Point, link: RoadLink, byLnks: seq[string],
+                        tblLink2AdmStr: TableRef[string, AdminStreet],
+                        street2Sector: TableRef[AdminStreet, Sector]): seq[tuple[distance: float, admStr: AdminStreet]] {.inline.} =
+    for lnkId in byLnks:
+        #echo "lnkId:", lnkId
+        if not tblLink2AdmStr.hasKey(lnkId):
+            continue
+        let refAdmStr = tblLink2AdmStr[lnkId]
+        if street2Sector.hasKey(refAdmStr):
+            continue # already in some sector - ignore it
+        if admStr.hashAdm != refAdmStr.hashAdm:
+            continue # we need only street in the same admin area
+        if admStr.hash == refAdmStr.hash:
+            continue # we need only other street
+        let d = link.refNodeCoord.distance minCoord
+        result.add (distance: d, admStr: refAdmStr)
+
+
 
 proc nearestStreets(admStr: AdminStreet, minCoord: Point,
                     tblLink2AdmStr: TableRef[string, AdminStreet],
                     numSector: var int,
-                    sectors: var TableRef[string, Sector],
-                    street2Sector: var TableRef[AdminStreet, Sector]) =
-    proc findConnectedStrs(link: RoadLink, byLnks: seq[string]): seq[tuple[distance: float, admStr: AdminStreet]] =
-        for lnkId in byLnks:
-            #echo "lnkId:", lnkId
-            if not tblLink2AdmStr.hasKey(lnkId):
-                continue
-            let refAdmStr = tblLink2AdmStr[lnkId]
-            if street2Sector.hasKey(tblLink2AdmStr[lnkId]):
-                continue # already in some sector - ignore it
-            if admStr.hashAdm != refAdmStr.hashAdm:
-                continue # we need only street in the same admin area
-            if admStr.hash == refAdmStr.hash:
-                continue # we need only other street
-            let d = link.refNodeCoord.distance minCoord
-            result.add (distance: d, admStr: refAdmStr)
+                    sectors: var OrderedTableRef[string, Sector],
+                    street2Sector: var TableRef[AdminStreet, Sector],
+                    dstncStr: var seq[tuple[distance: float, admStr: AdminStreet]]) =
     let
         cityName = admStr.city.pdeName.encodeName
         dn = admStr.district.pdeName.encodeName
@@ -371,18 +376,23 @@ proc nearestStreets(admStr: AdminStreet, minCoord: Point,
         sectorName = fmt"{admStr.postalCode}-{numSector} {cityName} {distrName}".strip
     discard sectors.hasKeyOrPut(sectorName, Sector(name: sectorName, streets: newSeq[AdminStreet]()))
     var sector = sectors[sectorName]
+    if street2Sector.hasKeyOrPut(admStr, sector):
+        return
     sector.streets.add admStr
-    discard street2Sector.hasKeyOrPut(admStr, sector)
     if sector.streets.len > 7:
         inc numSector
-    var dstncStr: seq[tuple[distance: float, admStr: AdminStreet]]
     for link in admStr.roadLinks:
-        dstncStr = dstncStr.concat findConnectedStrs(link, link.refLinks)
-        dstncStr = dstncStr.concat findConnectedStrs(link, link.nonRefLinks)
-    dstncStr = dstncStr.sortedByIt(it.distance)
-    for dStr in dstncStr:
-        dStr.admStr.nearestStreets(minCoord, tblLink2AdmStr, numSector, sectors, street2Sector)
-    echo "distance+street:", dstncStr[0].admStr.street
+        echo "link.linkId:", link.linkId
+        dstncStr = dstncStr.concat findConnectedStrs(admStr, minCoord, link, link.refLinks, tblLink2AdmStr, street2Sector)
+        dstncStr = dstncStr.concat findConnectedStrs(admStr, minCoord, link, link.nonRefLinks, tblLink2AdmStr, street2Sector)
+    let dstncStrCpy = dstncStr.sortedByIt(it.distance)
+    if dstncStr.len != 0:
+        echo "distance+street:", dstncStr[0].admStr.street
+    else:
+        echo "distance+street: empty!"
+    for dStr in dstncStrCpy:
+        dStr.admStr.nearestStreets(minCoord, tblLink2AdmStr, numSector, sectors, street2Sector, dstncStr)
+
 
 
 
@@ -437,15 +447,22 @@ proc main() =
         #for k,v in tblAdminStreet.pairs:
             #if k.city.pdeName.encodeName == "Hanau" and k.postalCode == "63452":
                 #echo "admStr: city:", k.city.pdeName.encodeName, ", district:", k.district.pdeName.encodeName, ", street:", k.street, ", hash:", k.hash
+        var
+            sectors = newOrderedTable[string, Sector]()
+            street2Sector = newTable[AdminStreet, Sector]()
         for adm, admStr in tblAdminWithStreet:
             let (minCoord, edgeStreet) = admStr.findEdgeStreet()
             echo "adm:", [adm.postalCode, adm.city.pdeName.encodeName, adm.district.pdeName.encodeName, edgeStreet.street].join(", ")
             #echo "edgeStreet:", edgeStreet.street
             var
-                sectors = newTable[string, Sector]()
-                street2Sector = newTable[AdminStreet, Sector]()
                 numSector = 1
-            edgeStreet.nearestStreets(minCoord, tblLink2AdminStreet, numSector, sectors, street2Sector)
+                dstncStr: seq[tuple[distance: float, admStr: AdminStreet]]
+            edgeStreet.nearestStreets(minCoord, tblLink2AdminStreet, numSector, sectors, street2Sector, dstncStr)
             break
-
+        for k,v in sectors.pairs:
+            echo "sector:", k
+            for admStr in v.streets:
+                echo "street:", admStr.street
+        for k,v in street2Sector.pairs:
+            echo "uniq street:", k.street
 main()
