@@ -268,6 +268,14 @@ proc filterRoadLinks(strm: Stream, tblDistrict: TableRef[string, District]): Are
                 area.roadLinks[linkId].name = pdeNames
                 #for strName in pdeNames:
                     #echo "strName:", strName.lang.string, " ", strName.name
+        of "POINT_ADDRESS":
+            readHead:
+                let
+                    iAddr = header.getIndex "ADDRESSES"
+                    pdeNames = parsePdeNames arrRow[iAddr]
+                area.roadLinks[linkId].addresses.add pdeNames.encodeName
+                #for strName in pdeNames:
+                    #echo "strName:", strName.lang.string, " ", strName.name
         else:
             discard
         #of "name":
@@ -409,11 +417,12 @@ proc main() =
         visDistrFile.close()
     when false:
         let layers = @[
-                "ROAD_ADMIN",
-                "ROAD_ADMIN_NAMES",
-                "ROAD_GEOM",
-                "ROAD_NAME",
-                "LINK"
+                ("ROAD_ADMIN", 0),
+                ("ROAD_ADMIN_NAMES", 0),
+                ("ROAD_GEOM", 0),
+                ("ROAD_NAME", 0),
+                ("LINK", 0),
+                ("POINT_ADDRESS", 13)
             ]
         getRoadLinks(layers, sectorBorderPonts, apikey, 2, 5, "roadLinks.txt")
     when false:
@@ -423,7 +432,7 @@ proc main() =
         sData.write(data)
         sData.close
         #writeFile("tblDistrict.json", tblDistrict.toJson)
-    when false:
+    when true:
         #let tblDistrict = (readFile "tblDistrict.json").fromJson(TableRef[string, District])
         let tblDistrict = (openFileStream "tblDistrict.data").readAll().uncompress().fromFlatty(TableRef[string, District])
         var area = filterRoadLinks(openFileStream "roadLinks.txt", tblDistrict)
@@ -432,7 +441,7 @@ proc main() =
         sData.write(data)
         sData.close
         #tblRoadLinks.clear
-    when true:
+    when false:
         let sDataR = openFileStream "area.data"
         let area = sDataR.readAll().uncompress().fromFlatty(Area)
         let tblRoadLinks = area.roadLinks
