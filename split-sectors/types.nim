@@ -92,6 +92,15 @@ proc hashAdm*(x: AdminStreet): Hash =
     let adm = Admin(postalCode: x.postalCode, city: x.city, district: x.district)
     adm.hash
 
+
+func countAddresses*(admStr: AdminStreet): int =
+    for link in admStr.roadlinks:
+        result += link.addresses.len
+
+func countAddresses*(sector: Sector): int =
+    for street in sector.streets:
+        result += street.countAddresses
+
 proc getEnumTypeStreet(x: char): PdeNameType =
     case x
     of 'A':
