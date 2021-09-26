@@ -19,7 +19,7 @@ proc isPointInPolygon*(testPoint: Point, polygPoints: openArray[Point]): bool =
 proc distance*(p1, p2: Point): float =
     sqrt ((p2.x - p1.x).pow(2) + (p2.y - p1.y).pow(2))
 
-proc parseCoords*(lats, lngs: string): seq[Point] =
+proc parseCoords*(lats, lngs: string): seq[Point] {.inline.} =
     let
         seqLats = (lats.split ",")
             .map((x) => (if x == "": "0" else: x))

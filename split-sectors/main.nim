@@ -399,22 +399,28 @@ proc nearestStreets(admStr: AdminStreet, minCoord: Point,
         dstncStr = dstncStr.concat findConnectedStrs(admStr, minCoord, link, link.refLinks, tblLink2AdmStr, street2Sector)
         dstncStr = dstncStr.concat findConnectedStrs(admStr, minCoord, link, link.nonRefLinks, tblLink2AdmStr, street2Sector)
     let dstncStrCpy = dstncStr.sortedByIt(it.distance)
-    #[if dstncStr.len != 0:
-        echo "distance+street:", dstncStr[0].admStr.street
-    else:
-        echo "distance+street: empty!"]#
+    if dstncStrCpy.len == 0:
+        echo "distance+street: empty!:", street2Sector[admStr].name, " ", admStr.street
     for dStr in dstncStrCpy:
         dStr.admStr.nearestStreets(minCoord, tblLink2AdmStr, numSector, sectors, street2Sector, dstncStr)
 
 
-func sectors2AdminName(sectors: OrderedTableRef[string, Sector]): TableRef[string, seq[OrderedTableRef[string, Sector]]] =
-    result = newTable[string, seq[OrderedTableRef[string, Sector]]]()
+func sectors2AdminName(sectors: var OrderedTableRef[string, Sector]): TableRef[string, seq[string]] =
+    result = newTable[string, seq[string]]()
+    var sectsForDel: seq[string]
     for k,v in sectors:
+        if v.streets.len == 0:
+            #{.cast(noSideEffect).}:
+                #echo "sectors2AdminName:", k
+            sectsForDel.add k
+            continue
         let
             admStr = v.streets[0]
-            admName = admStr.adminKey
-        discard result.hasKeyOrPut(admName, newSeq[OrderedTableRef[string, Sector]]())
-        result[admName].add v
+            adminKey = admStr.adminKey
+        discard result.hasKeyOrPut(adminKey, newSeq[string]())
+        result[adminKey].add k
+    for s in sectsForDel:
+        sectors.del s
 
 
 
@@ -459,11 +465,11 @@ proc main() =
     when true:
         let sDataR = openFileStream "area.data"
         let area = sDataR.readAll().uncompress().fromFlatty(Area)
-        let tblRoadLinks = area.roadLinks
+        #[let tblRoadLinks = area.roadLinks
         echo tblRoadLinks["52418711"].name.encodeName
         echo tblRoadLinks["1200131157"].name.encodeName
         echo tblRoadLinks["990689333"].name.encodeName
-        echo tblRoadLinks["1157468789"].name.encodeName
+        echo tblRoadLinks["1157468789"].name.encodeName]#
         let
             tblAdminStreet = area.splitLinksByStreet()
             tblAdminWithStreet = tblAdminStreet.splitStreetsByAdmin()
@@ -483,13 +489,15 @@ proc main() =
                 dstncStr: seq[tuple[distance: float, admStr: AdminStreet]]
             edgeStreet.nearestStreets(minCoord, tblLink2AdminStreet, numSector, sectors, street2Sector, dstncStr)
             #break
-        for k,v in sectors.pairs:
-            if k.split(" ")[^1] != "Büdingen":
-                continue
+        let admSectors = sectors2AdminName sectors
+        for nameSector in admSectors["63450 Hanau Großauheim"]:
+            let sector = sectors[nameSector]
             echo ""
-            echo "sector:", k, " :", v.countAddresses
-            for admStr in v.streets:
-                echo "street:", admStr.street
+            echo "sector:", nameSector, " :", sector.countAddresses
+            for admStr in sector.streets:
+                echo "street:", admStr.street, "-", admStr.countAddresses
+                for link in admStr.roadlinks:
+                    echo "linkId:", link.linkId
         #for k,v in street2Sector.pairs:
             #echo "uniq street:", k.street
 main()
