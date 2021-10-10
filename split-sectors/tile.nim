@@ -10,7 +10,7 @@ proc getTileXY*(level: int, lat, lng: float): (int, int) =
     let tileSize = 180 / (2 ^ level)
     (trunc( (lng + 180) / tileSize ).int, trunc( (lat + 90) / tileSize ).int)
 
-
+#convert TileId(TileXY) to another level
 proc toTileXY*(fromLevel, fromTileX, fromTileY, toLevel: int): seq[(int, int)] =
     let c = getCoord(fromLevel, fromTileX, fromTileY)
     let tileXY = getTileXY(toLevel, c[0], c[1])

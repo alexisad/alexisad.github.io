@@ -22,15 +22,15 @@ proc distance*(p1, p2: Point): float =
 proc parseCoords*(lats, lngs: string): seq[Point] {.inline.} =
     let
         seqLats = (lats.split ",")
-            .map((x) => (if x == "": "0" else: x))
+            .map((x) => (if x == "": 0 else: x.parseInt))
         seqLngs = (lngs.split ",")
-            .map((x) => (if x == "": "0" else: x))
+            .map((x) => (if x == "": 0 else: x.parseInt))
     var
         fLat, fLng: int
     for i,lat in seqLats:
         let lng = seqLngs[i]
-        fLat += lat.parseInt
-        fLng += lng.parseInt
+        fLat += lat
+        fLng += lng
         result.add Point(y: fLat / 100_000, x: fLng / 100_000)
 
 
@@ -63,7 +63,7 @@ proc getIndex*(xs: seq[string], s: string): int =
     result = -1
 
 
-proc parseAdmins*(x: string, ignoreLeftRight = true): seq[string] =
+proc parseAdmins*(x: string, ignoreLeftRight = true): seq[string] {.inline.} =
     #let chkCity = x.split(",")[3]
     #if chkCity.split(";").len > 1:
         #echo ">1 city:", chkCity
@@ -78,7 +78,7 @@ proc parseAdmins*(x: string, ignoreLeftRight = true): seq[string] =
             x.split(",")
     if x.split(",").len != adminsTmp.len:
         return newSeq[string]()
-    let districtIds0 = adminsTmp
+    let admIds = adminsTmp
         .map(item => (
                 let arrLrD = item.split ";"
                 let lrD = arrLrD[0].strip
@@ -89,18 +89,16 @@ proc parseAdmins*(x: string, ignoreLeftRight = true): seq[string] =
                     lrD]#
             )
         )
-    let cityId = districtIds0[3].parseInt
+    let cityId = admIds[3].parseInt
     result = collect(newSeq):
-        for i,d in districtIds0:
-            if d.toLowerAscii == "null":
-                ""
-            else:
+        for i,v in admIds:
+            if v != "":
                 if i != 3: #not city
-                    if d != "":
-                        $(cityId + d.parseInt)
-                    else:
-                        d
+                    $(cityId + v.parseInt)
                 else:
-                    d
+                    v
+            else:
+                ""
+
 
 

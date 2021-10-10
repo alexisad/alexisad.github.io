@@ -44,7 +44,7 @@ type
     RoadLink* = ref object
         linkId*: string
         name*: seq[PdeName]
-        disstrictId*: string
+        districtId*: string
         cityId*: string
         coords*: seq[Point]
         refNodeCoord*: Point

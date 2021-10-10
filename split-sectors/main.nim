@@ -12,6 +12,7 @@ const
     border = "63688 Ober-Seemen,63697 Merkenfritz,63697 Hirzenhain,63683 Lißberg,63683 Eckartsborn,63691 Bobenhausen,63683 Wippenbach,63683 Selters (Ortenberg),63683 Bleichenbach,63654 Büdingen>city,63674 Enzheim,63674 Lindheim,63674 Oberau,63674 Höchst,61130 Eichen,61130 Nidderau Heldenbergen,61130 Windecken,61137 Schöneck,61137 Oberdorfelden,61138 Niederdorfelden>city,63477 Maintal>city,63165 Mühlheim am Main>city,63075 Waldheim,63179 Obertshausen>city,63150 Heusenstamm>city,63128 Dietzenbach,63322 Waldacker,63322 Rödermark Ober-Roden,63110 Rodgau>city,63533 Mainhausen>city,63538 Großkrotzenburg>city,63517 Rodenbach>city,63579 Neuses,63579 Horbach,63589 Waldrode,63599 Biebergemünd>city,63639 Flörsbachtal>city,63637 Pfaffenhausen>city,63628 Alsberg,63628 Kerbersdorf,63628 Schönhof,63633 Wettges"
     sectorBorderPonts = getBorderPoints(hrCoordReal) #get seq[Point] of polygon sector
 
+#map distrivt id to District object with border
 proc parseDistricts(d: string): TableRef[string, District] =
     result = newTable[string, District]()
     var
@@ -36,6 +37,13 @@ proc parseDistricts(d: string): TableRef[string, District] =
                     new(District)
             prevLat: int
             prevLng: int
+        #TODO - polygonOuter and outerPoints are not correct
+        #[
+            https://tcs.ext.here.com/pde/layer?region=WEU&release=latest&url_root=pde.api.here.com&layer=ADMIN_POLY_9
+            Polylines are cut at tile boundaries, so that a polyline is decomposed into smaller pieces.
+            Longitude coordinate values with a leading zero indicate that the line to the next coordinate is artificially introduced by tiling.
+            These lines must be used to draw filled polygons and to compute 'point in polygon', but must be skipped when drawing border lines.
+        ]#
         for i in 0..arrLat.high:
             prevLat = prevLat + arrLat[i].parseInt
             prevLng = prevLng + arrLng[i].parseInt
@@ -53,7 +61,7 @@ proc parseDistricts(d: string): TableRef[string, District] =
     strmD.close()
 
 
-
+# get inner districts by admin area names which are border
 proc getDistricts(d: string): TableRef[string, District] =
     var
         client = newHttpClient()
@@ -63,7 +71,7 @@ proc getDistricts(d: string): TableRef[string, District] =
         minTileX, minTileY = int.high
     let
         arrDistricts = d.split ","
-    for distr in arrDistricts:
+    for distr in arrDistricts: #get cityIds or districtIds which on the border
         let
             arrAddr = distr.split ">"
             isCity = arrAddr.len == 2
@@ -88,7 +96,7 @@ proc getDistricts(d: string): TableRef[string, District] =
         cityValues = encodeUrl(cityIds.join ",")
         urlAdminPlaceCity = fmt"https://fleet.ls.hereapi.com/1/index.json?apikey={apikey}&layer=ADMIN_PLACE_8&attributes=ADMIN_PLACE_ID&values={cityValues}"
         resAdminCityIdx = parseJson(client.getContent urlAdminPlaceCity)
-    var txys: seq[(int, int)]
+    var txys: seq[(int, int)] #Tile ids for whole area
     for layer in resAdminDistrIdx["Layers"]:
         for tileXY in layer["tileXYs"]:
             txys.add (tileXY["x"].getInt, tileXY["y"].getInt)
@@ -112,7 +120,7 @@ proc getDistricts(d: string): TableRef[string, District] =
             arrTileXYs.add [tx, ty].join(",")
             arrLevels.add "11"
             arrLayers.add "ADMIN_POLY_9"
-    let numPart = (arrTileXYs.len div 64) + 1
+    let numPart = (arrTileXYs.len div 64) + 1 #needs split by 64 - limit of REST API
     let dTileXYs = arrTileXYs.distribute(numPart, false)
     let dLevels = arrLevels.distribute(numPart, false)
     let dLayers = arrLayers.distribute(numPart, false)
@@ -126,10 +134,10 @@ proc getDistricts(d: string): TableRef[string, District] =
             resPolyAdmin = client.getContent urlPolyAdmin
         var arrResPolyAdmin = resPolyAdmin.split "\l"
         if i > 0:
-            arrResPolyAdmin.delete(0) #delete header
+            arrResPolyAdmin.delete(0) #we need only one header of columns for layer ADMIN_POLY_9
         arrAllPolyAdmin = arrAllPolyAdmin.concat(arrResPolyAdmin)
     let tblDistrict = parseDistricts(arrAllPolyAdmin.join "\n")
-    #del districts outside the border
+    #del districts outside the border of the sector
     var forDel: seq[string]
     for k,v in tblDistrict:
         for p in v.outerPoints:
@@ -169,6 +177,101 @@ template readHead(b: untyped): untyped =
                 area.roadLinks[linkId].linkId = linkId
             #echo "linkId:", linkId, tblRoadLinks.len
             b
+
+
+
+proc checkRoadLinksOnAdmin(strm: Stream) =
+    var
+        layer: string
+        willHead = false
+        header: seq[string]
+        idxPlIds, idxLinkId: int
+        idxLat, idxLng: int
+        tblCityEmpDistrict = newTable[string, seq[string]]() #links with empty districtId grouped by city
+        tblLink2City = newTable[string, string]() #map linkId to cityid
+        tblLinkIdHasAddress = newTable[string, seq[Point]]() #links which have addresses
+        tblLinkRefNodeCoords = newTable[string, seq[Point]]() #links with refnode coords
+    for line in strm.lines():
+        let arrLine = line.split '\t'
+        if arrLine[0] == "Meta:":
+            layer = arrLine[1].multiReplace getFcs()
+            willHead = true
+            continue
+        if layer == "ROAD_ADMIN":
+            if willHead:
+                header = line.split '\t'
+                idxLinkId = header.getIndex "LINK_ID"
+                idxPlIds = header.getIndex "ADMIN_PLACE_IDS"
+                willHead = false
+            else:
+                let
+                    arrRow = line.split '\t'
+                    districtId = parseAdmins(arrRow[idxPlIds], false)[4]
+                    cityId = parseAdmins(arrRow[idxPlIds], false)[3]
+                    linkId = arrRow[idxLinkId]
+                tblLink2City[linkId] = cityId
+                if cityId == "":
+                    echo "city is empty link:", linkId
+                if districtId == "":
+                    discard tblCityEmpDistrict.hasKeyOrPut(cityId, @[])
+                    tblCityEmpDistrict[cityId].add linkId
+        if layer == "POINT_ADDRESS":
+            if willHead:
+                header = line.split '\t'
+                idxLinkId = header.getIndex "LINK_ID"
+                idxLat = header.getIndex "LAT"
+                idxLng = header.getIndex "LON"
+                willHead = false
+            else:
+                let
+                    arrRow = line.split '\t'
+                    linkId = arrRow[idxLinkId]
+                #echo "linkId:", linkId, " ", arrRow[idxLat], " ", arrRow[idxLng]
+                let lng = arrRow[idxLng].parseInt
+                let lat = arrRow[idxLat].parseInt
+                discard tblLinkIdHasAddress.hasKeyOrPut(linkId, @[])
+                tblLinkIdHasAddress[linkId].add Point(x: lng / 100_000, y: lat / 100_000)
+        if layer == "LINK":
+            if willHead:
+                header = line.split '\t'
+                idxLinkId = header.getIndex "LINK_ID"
+                idxLat = header.getIndex "LAT"
+                idxLng = header.getIndex "LON"
+                willHead = false
+            else:
+                let
+                    arrRow = line.split '\t'
+                    linkId = arrRow[idxLinkId]
+                    lngs = arrRow[idxLng]
+                    lats = arrRow[idxLat]
+                #echo "linkId:", linkId, " ", lngs, " ", lats
+                let coords = parseCoords(lats, lngs)
+                tblLinkRefNodeCoords[linkId] = coords
+    for cityId, linkIds in tblCityEmpDistrict:
+        let empDistrWithAddrLinks = linkIds.filterIt(tblLinkIdHasAddress.hasKey it) 
+        for linkId in empDistrWithAddrLinks:
+            var
+                minD = float.high
+                nearLink: string
+            for point in tblLinkRefNodeCoords[linkId]:
+                for mlinkId, mPoints in tblLinkRefNodeCoords:
+                    if tblLink2City[mlinkId] != cityId:
+                        continue
+                    if tblCityEmpDistrict[cityId].contains(mlinkId):
+                        continue
+                    for mPoint in mPoints:
+                        let d = point.distance mPoint
+                        if d < minD:
+                            nearLink = mlinkId
+                            minD = d
+            echo "linkId->nearLink:", linkId, ",", nearLink
+        if empDistrWithAddrLinks.len != 0:
+            echo "cityId:", cityId
+            echo "linkIds:", empDistrWithAddrLinks.join(",")
+            echo ""
+            #break
+    strm.close
+
 
 
 proc filterRoadLinks(strm: Stream, tblDistrict: TableRef[string, District]): Area =
@@ -223,7 +326,7 @@ proc filterRoadLinks(strm: Stream, tblDistrict: TableRef[string, District]): Are
                     cityId = parseAdmins(arrRow[idxPlIds], false)[3]
                     link = area.roadLinks[linkId]
                 link.postalCode = arrRow[idxPcs].split(";")[0]
-                link.disstrictId = districtId
+                link.districtId = districtId
                 link.cityId = cityId
                 discard area.cities.hasKeyOrPut(cityId, City(id: cityId))
                 discard area.districts.hasKeyOrPut(districtId, District(id: districtId))
@@ -234,7 +337,7 @@ proc filterRoadLinks(strm: Stream, tblDistrict: TableRef[string, District]): Are
                     iDstr = header.getIndex "BUILTUP_NAMES" #district
                     link = area.roadLinks[linkId]
                     cityId = link.cityId
-                    districtId = link.disstrictId
+                    districtId = link.districtId
                 area.cities[cityId].pdeName = parsePdeNames arrRow[iCty]
                 area.districts[districtId].pdeName = parsePdeNames arrRow[iDstr]
         of "ROAD_GEOM":
@@ -295,7 +398,7 @@ proc splitLinksByStreet(area: Area): TableRef[AdminStreet, seq[RoadLink]] =
         var admStr = AdminStreet(
                         postalCode: v.postalCode,
                         city: area.cities[v.cityId],
-                        district: area.districts[v.disstrictId],
+                        district: area.districts[v.districtId],
                         street: strName,
                         roadLinks: @[]
                 )
@@ -453,6 +556,8 @@ proc main() =
         sData.write(data)
         sData.close
         #writeFile("tblDistrict.json", tblDistrict.toJson)
+    when true:
+        checkRoadLinksOnAdmin(openFileStream "roadLinks.txt")
     when false:
         #let tblDistrict = (readFile "tblDistrict.json").fromJson(TableRef[string, District])
         let tblDistrict = (openFileStream "tblDistrict.data").readAll().uncompress().fromFlatty(TableRef[string, District])
@@ -462,7 +567,7 @@ proc main() =
         sData.write(data)
         sData.close
         #tblRoadLinks.clear
-    when true:
+    when false:
         let sDataR = openFileStream "area.data"
         let area = sDataR.readAll().uncompress().fromFlatty(Area)
         #[let tblRoadLinks = area.roadLinks
@@ -490,14 +595,29 @@ proc main() =
             edgeStreet.nearestStreets(minCoord, tblLink2AdminStreet, numSector, sectors, street2Sector, dstncStr)
             #break
         let admSectors = sectors2AdminName sectors
-        for nameSector in admSectors["63450 Hanau Großauheim"]:
-            let sector = sectors[nameSector]
-            echo ""
-            echo "sector:", nameSector, " :", sector.countAddresses
-            for admStr in sector.streets:
-                echo "street:", admStr.street, "-", admStr.countAddresses
-                for link in admStr.roadlinks:
-                    echo "linkId:", link.linkId
+        for k,s in admSectors:
+            if s.len == 1:
+                let
+                    nameSector = s[0]
+                    sector = sectors[nameSector]
+                if sector.countAddresses > 10:
+                    continue
+                echo "1 sector:", nameSector, " :", sector.countAddresses
+                for admStr in sector.streets:
+                    echo "street:", admStr.street, "-", admStr.countAddresses
+                    for link in admStr.roadlinks:
+                        echo "linkId:", link.linkId
+            elif s.len == 0:
+                echo "no sectors:", k
+        when false:
+            for nameSector in admSectors["63450 Hanau Großauheim"]:
+                let sector = sectors[nameSector]
+                echo ""
+                echo "sector:", nameSector, " :", sector.countAddresses
+                for admStr in sector.streets:
+                    echo "street:", admStr.street, "-", admStr.countAddresses
+                    for link in admStr.roadlinks:
+                        echo "linkId:", link.linkId
         #for k,v in street2Sector.pairs:
             #echo "uniq street:", k.street
 main()

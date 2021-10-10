@@ -20,6 +20,7 @@ proc distribTilesBy*(tSet: TileLayerSet, by: int): TileLayerSetDistribBy =
     result.levels = tSet.levels.distribute numParts
     result.layrs = tSet.layers.distribute numParts
 
+
 proc getRoadLinks*(layers: seq[tuple[lr: string, level: int]], sectorBorderPonts: seq[Point],
                         apikey: string, fromFc, toFc: int, saveTo: string) =
     var
@@ -28,7 +29,7 @@ proc getRoadLinks*(layers: seq[tuple[lr: string, level: int]], sectorBorderPonts
     for fc in fromFc..toFc:
         var lvl = fc + 8
         for layer in layers:
-            if arrLayers.filterIt(it == layer.lr).len != 0:
+            if arrLayers.filterIt(it == layer.lr).len != 0: #not FC layer
                 continue
             lvl = if layer.level > 0: layer.level else: lvl
             let tXYs = tilesByPolygon(lvl, sectorBorderPonts) #get TileXYs which cover polygon sector
