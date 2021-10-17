@@ -37,7 +37,7 @@ proc parseDistricts(d: string): TableRef[string, District] =
                     new(District)
             prevLat: int
             prevLng: int
-        #TODO - polygonOuter and outerPoints are not correct
+        #TODO - polygonOuter and outerPoints are not correct (see please below) but for this logic of app it could be enough
         #[
             https://tcs.ext.here.com/pde/layer?region=WEU&release=latest&url_root=pde.api.here.com&layer=ADMIN_POLY_9
             Polylines are cut at tile boundaries, so that a polyline is decomposed into smaller pieces.
@@ -133,17 +133,20 @@ proc getDistricts(d: string): TableRef[string, District] =
             urlPolyAdmin = fmt"https://fleet.ls.hereapi.com/1/tiles.txt?apikey={apikey}&tilexy={allTileXYs}&layers={layers}&levels={levels}"
             resPolyAdmin = client.getContent urlPolyAdmin
         var arrResPolyAdmin = resPolyAdmin.split "\l"
-        if i > 0:
+        if i > 0: #keep header only from response of first request
             arrResPolyAdmin.delete(0) #we need only one header of columns for layer ADMIN_POLY_9
         arrAllPolyAdmin = arrAllPolyAdmin.concat(arrResPolyAdmin)
     let tblDistrict = parseDistricts(arrAllPolyAdmin.join "\n")
     #del districts outside the border of the sector
     var forDel: seq[string]
     for k,v in tblDistrict:
+        var inSector = false
         for p in v.outerPoints:
-            if not p.isPointInPolygon sectorBorderPonts:
-                forDel.add v.id
-            break
+            if p.isPointInPolygon sectorBorderPonts:
+                inSector = true
+                break
+        if not inSector:
+            forDel.add v.id
     for id in forDel:
         tblDistrict.del id
     result = tblDistrict
@@ -180,17 +183,20 @@ template readHead(b: untyped): untyped =
 
 
 
-proc checkRoadLinksOnAdmin(strm: Stream) =
+proc checkRoadLinksOnAdmin(strm: Stream): TableRef[string, string] =
     var
         layer: string
         willHead = false
         header: seq[string]
-        idxPlIds, idxLinkId: int
+        idxPlIds, idxLinkId, idxPcs: int
         idxLat, idxLng: int
         tblCityEmpDistrict = newTable[string, seq[string]]() #links with empty districtId grouped by city
+        tblCityEmpPc = newTable[string, seq[string]]() #links with empty postal codes grouped by city
         tblLink2City = newTable[string, string]() #map linkId to cityid
         tblLinkIdHasAddress = newTable[string, seq[Point]]() #links which have addresses
         tblLinkRefNodeCoords = newTable[string, seq[Point]]() #links with refnode coords
+        tblLinksDistrict = newTable[string, string]() #links to district
+        tblLinksNewDistrict = newTable[string, string]() #links with new district
     for line in strm.lines():
         let arrLine = line.split '\t'
         if arrLine[0] == "Meta:":
@@ -202,19 +208,31 @@ proc checkRoadLinksOnAdmin(strm: Stream) =
                 header = line.split '\t'
                 idxLinkId = header.getIndex "LINK_ID"
                 idxPlIds = header.getIndex "ADMIN_PLACE_IDS"
+                idxPcs = header.getIndex "POSTAL_CODES"
                 willHead = false
             else:
                 let
                     arrRow = line.split '\t'
                     districtId = parseAdmins(arrRow[idxPlIds], false)[4]
                     cityId = parseAdmins(arrRow[idxPlIds], false)[3]
+                    postalCode = arrRow[idxPcs].split(";")[0]
                     linkId = arrRow[idxLinkId]
                 tblLink2City[linkId] = cityId
+                #if linkId == "829359179":
+                    #echo "!!!!!", linkId, "->", districtId
                 if cityId == "":
                     echo "city is empty link:", linkId
                 if districtId == "":
                     discard tblCityEmpDistrict.hasKeyOrPut(cityId, @[])
                     tblCityEmpDistrict[cityId].add linkId
+                else:
+                    if linkId == "1156504171":
+                        echo "1156504171:", districtId
+                    discard tblLinksDistrict.hasKeyOrPut(linkId, districtId)
+                    #tblLinksDistrict[linkId] = districtId
+                if postalCode == "null":
+                    discard tblCityEmpPc.hasKeyOrPut(cityId, @[])
+                    tblCityEmpPc[cityId].add linkId
         if layer == "POINT_ADDRESS":
             if willHead:
                 header = line.split '\t'
@@ -247,6 +265,9 @@ proc checkRoadLinksOnAdmin(strm: Stream) =
                 #echo "linkId:", linkId, " ", lngs, " ", lats
                 let coords = parseCoords(lats, lngs)
                 tblLinkRefNodeCoords[linkId] = coords
+    echo "PC null:"
+    for cityId, linkIds in tblCityEmpPc:
+        echo linkIds
     for cityId, linkIds in tblCityEmpDistrict:
         let empDistrWithAddrLinks = linkIds.filterIt(tblLinkIdHasAddress.hasKey it) 
         for linkId in empDistrWithAddrLinks:
@@ -264,17 +285,23 @@ proc checkRoadLinksOnAdmin(strm: Stream) =
                         if d < minD:
                             nearLink = mlinkId
                             minD = d
-            echo "linkId->nearLink:", linkId, ",", nearLink
-        if empDistrWithAddrLinks.len != 0:
-            echo "cityId:", cityId
-            echo "linkIds:", empDistrWithAddrLinks.join(",")
-            echo ""
-            #break
+            try:
+                tblLinksNewDistrict[linkId] = tblLinksDistrict[nearLink]
+                #echo "distr:",tblLinksDistrict[nearLink]
+            except:
+                echo "linkId->nearLink:", linkId, ",", nearLink
+        when false:
+            if empDistrWithAddrLinks.len != 0:
+                echo "cityId:", cityId
+                echo "linkIds:", empDistrWithAddrLinks.join(",")
+                echo ""
+                #break
     strm.close
+    result = tblLinksNewDistrict
 
 
 
-proc filterRoadLinks(strm: Stream, tblDistrict: TableRef[string, District]): Area =
+proc filterRoadLinks(strm: Stream, tblDistrict: TableRef[string, District], tblLinksNewDistrict: TableRef[string, string]): Area =
     var
         exceptsLinks: seq[string]
         layer: string
@@ -301,7 +328,11 @@ proc filterRoadLinks(strm: Stream, tblDistrict: TableRef[string, District]): Are
                 willHead = false
             else:
                 let arrRow = line.split '\t'
-                let districtId = parseAdmins(arrRow[idxPlIds], false)[4]
+                let linkId = arrRow[idxLinkId]
+                var districtId = parseAdmins(arrRow[idxPlIds], false)[4]
+                if tblLinksNewDistrict.hasKey(linkId): #above districtId is empty
+                    #echo "should be empty districtId:", districtId
+                    districtId = tblLinksNewDistrict[linkId]
                 if not tblDistrict.hasKey districtId:
                     exceptsLinks.add arrRow[idxLinkId].strip
     strm.setPosition 0
@@ -321,8 +352,11 @@ proc filterRoadLinks(strm: Stream, tblDistrict: TableRef[string, District]): Are
                 idxPlIds = header.getIndex "ADMIN_PLACE_IDS"
                 idxPcs = header.getIndex "POSTAL_CODES"
                 #echo "idxPlIds:", arrRow
-                let
+                var
                     districtId = parseAdmins(arrRow[idxPlIds], false)[4]
+                if tblLinksNewDistrict.hasKey(linkId): #above districtId is empty
+                    districtId = tblLinksNewDistrict[linkId]
+                let
                     cityId = parseAdmins(arrRow[idxPlIds], false)[3]
                     link = area.roadLinks[linkId]
                 link.postalCode = arrRow[idxPcs].split(";")[0]
@@ -337,16 +371,21 @@ proc filterRoadLinks(strm: Stream, tblDistrict: TableRef[string, District]): Are
                     iDstr = header.getIndex "BUILTUP_NAMES" #district
                     link = area.roadLinks[linkId]
                     cityId = link.cityId
+                var
                     districtId = link.districtId
+                if tblLinksNewDistrict.hasKey(linkId): #above districtId is empty
+                    districtId = tblLinksNewDistrict[linkId]
                 area.cities[cityId].pdeName = parsePdeNames arrRow[iCty]
-                area.districts[districtId].pdeName = parsePdeNames arrRow[iDstr]
+                if arrRow[iDstr] != "null":
+                    area.districts[districtId].pdeName = parsePdeNames arrRow[iDstr]
         of "ROAD_GEOM":
             #echo "ROAD_GEOM!!!!"
             readHead:
                 let
                     idxLat = header.getIndex "LAT"
                     idxLon = header.getIndex "LON"
-                area.roadLinks[linkId].coords = parseCoords(arrRow[idxLat], arrRow[idxLon])
+                    link = area.roadLinks[linkId]
+                link.coords = parseCoords(arrRow[idxLat], arrRow[idxLon])
         of "LINK":
             #echo "ROAD_GEOM!!!!"
             readHead:
@@ -368,7 +407,8 @@ proc filterRoadLinks(strm: Stream, tblDistrict: TableRef[string, District]): Are
                 let
                     iNames = header.getIndex "NAMES"
                     pdeNames = parsePdeNames arrRow[iNames]
-                area.roadLinks[linkId].name = pdeNames
+                    link = area.roadLinks[linkId]
+                link.name = pdeNames
                 #for strName in pdeNames:
                     #echo "strName:", strName.lang.string, " ", strName.name
         of "POINT_ADDRESS":
@@ -376,11 +416,12 @@ proc filterRoadLinks(strm: Stream, tblDistrict: TableRef[string, District]): Are
                 let
                     iAddr = header.getIndex "ADDRESSES"
                     pdeNames = parsePdeNames arrRow[iAddr]
-                area.roadLinks[linkId].addresses.add pdeNames.encodeName
+                    link = area.roadLinks[linkId]
+                link.addresses.add pdeNames.encodeName
                 #for strName in pdeNames:
                     #echo "strName:", strName.lang.string, " ", strName.name
         else:
-            discard
+            echo "strange layer name:", layer
         #of "name":
     strm.close
     result = area
@@ -556,18 +597,21 @@ proc main() =
         sData.write(data)
         sData.close
         #writeFile("tblDistrict.json", tblDistrict.toJson)
-    when true:
-        checkRoadLinksOnAdmin(openFileStream "roadLinks.txt")
     when false:
-        #let tblDistrict = (readFile "tblDistrict.json").fromJson(TableRef[string, District])
+        let tblLinksNewDistrict = checkRoadLinksOnAdmin(openFileStream "roadLinks.txt")
+        let sData = openFileStream("tblLinksNewDistrict.data", fmWrite)
+        sData.write(tblLinksNewDistrict.toFlatty().compress())
+        sData.close
+    when false:
         let tblDistrict = (openFileStream "tblDistrict.data").readAll().uncompress().fromFlatty(TableRef[string, District])
-        var area = filterRoadLinks(openFileStream "roadLinks.txt", tblDistrict)
+        let tblLinksNewDistrict = (openFileStream "tblLinksNewDistrict.data").readAll().uncompress().fromFlatty(TableRef[string, string])
+        var area = filterRoadLinks(openFileStream "roadLinks.txt", tblDistrict, tblLinksNewDistrict)
         let data = area.toFlatty().compress()
         let sData = openFileStream("area.data", fmWrite)
         sData.write(data)
         sData.close
         #tblRoadLinks.clear
-    when false:
+    when true:
         let sDataR = openFileStream "area.data"
         let area = sDataR.readAll().uncompress().fromFlatty(Area)
         #[let tblRoadLinks = area.roadLinks
