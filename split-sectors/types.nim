@@ -4,6 +4,18 @@ import utils, strutils, tables, unicode, sugar, hashes
 export hashes
 
 type
+    TileId* = object
+        x*, y*: int
+    TileLayerSet* = ref object
+        layers*: seq[string]
+        levels*: seq[int]
+        tileXys*: seq[string]
+    TileLayerSetDistribBy* = ref object
+        layrs*: seq[seq[string]]
+        levels*: seq[seq[int]]
+        tileXys*: seq[seq[string]]
+
+type
     Sector* = ref object
         name*: string
         streets*: seq[AdminStreet]
@@ -26,17 +38,8 @@ type
         postalCode*: string
         district*: District
         street*: string
+        isStrNameEmpty*: bool
         roadlinks*: seq[RoadLink]
-    TileId* = object
-        x*, y*: int
-    TileLayerSet* = ref object
-        layers*: seq[string]
-        levels*: seq[int]
-        tileXys*: seq[string]
-    TileLayerSetDistribBy* = ref object
-        layrs*: seq[seq[string]]
-        levels*: seq[seq[int]]
-        tileXys*: seq[seq[string]]
     Area* = ref object
         roadLinks*: TableRef[string, RoadLink]
         cities*: TableRef[string, City]
@@ -44,6 +47,7 @@ type
     RoadLink* = ref object
         linkId*: string
         name*: seq[PdeName]
+        isStrNameEmpty*: bool
         districtId*: string
         cityId*: string
         coords*: seq[Point]
@@ -67,7 +71,7 @@ type
         nameKind*: PdeNameKind
     LangCode* = distinct string
 
-proc encodeName*(it: seq[PdeName], lang = "GER".LangCode): string
+proc decodeName*(it: seq[PdeName], lang = "GER".LangCode): string
 
 proc hashCityPc*(x: RoadLink): Hash =
     result = x.cityId.hash !& x.postalCode.hash
@@ -78,14 +82,14 @@ proc hash*(x: LangCode): Hash =
     result = !$result
 
 proc hash*(x: Admin): Hash =
-    result = x.postalCode.hash !& x.city.pdeName.encodeName.hash !&
-                x.district.pdeName.encodeName.hash
+    result = x.postalCode.hash !& x.city.pdeName.decodeName.hash !&
+                x.district.pdeName.decodeName.hash
     result = !$result
 
 
 proc hash*(x: AdminStreet): Hash =
-    result = x.postalCode.hash !& x.city.pdeName.encodeName.hash !&
-                x.district.pdeName.encodeName.hash !& x.street.hash
+    result = x.postalCode.hash !& x.city.pdeName.decodeName.hash !&
+                x.district.pdeName.decodeName.hash !& x.street.hash
     result = !$result
 
 proc hashAdm*(x: AdminStreet): Hash =
@@ -162,7 +166,7 @@ proc parsePdeNames*(strEnc: string): seq[PdeName] {.inline.} =
         #echo "arrName:", arrName
 
 
-proc encodeName*(it: seq[PdeName], lang = "GER".LangCode): string =
+proc decodeName*(it: seq[PdeName], lang = "GER".LangCode): string =
     var street = collect(initTable):
         for s in it:
             {s.lang.string: s.name}

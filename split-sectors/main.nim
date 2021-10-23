@@ -409,6 +409,7 @@ proc filterRoadLinks(strm: Stream, tblDistrict: TableRef[string, District], tblL
                     pdeNames = parsePdeNames arrRow[iNames]
                     link = area.roadLinks[linkId]
                 link.name = pdeNames
+                link.isStrNameEmpty = pdeNames.decodeName() == ""
                 #for strName in pdeNames:
                     #echo "strName:", strName.lang.string, " ", strName.name
         of "POINT_ADDRESS":
@@ -417,7 +418,7 @@ proc filterRoadLinks(strm: Stream, tblDistrict: TableRef[string, District], tblL
                     iAddr = header.getIndex "ADDRESSES"
                     pdeNames = parsePdeNames arrRow[iAddr]
                     link = area.roadLinks[linkId]
-                link.addresses.add pdeNames.encodeName
+                link.addresses.add pdeNames.decodeName
                 #for strName in pdeNames:
                     #echo "strName:", strName.lang.string, " ", strName.name
         else:
@@ -433,14 +434,15 @@ proc splitLinksByStreet(area: Area): TableRef[AdminStreet, seq[RoadLink]] =
         tblAdminStrKeys = newTable[Hash, AdminStreet]()
     result = newTable[AdminStreet, seq[RoadLink]]()
     for k,v in tblRoadLinks.pairs:
-        let strName = v.name.encodeName
+        var strName = v.name.decodeName
         if strName == "":
-            continue
+            strName = k
         var admStr = AdminStreet(
                         postalCode: v.postalCode,
                         city: area.cities[v.cityId],
                         district: area.districts[v.districtId],
                         street: strName,
+                        isStrNameEmpty: v.isStrNameEmpty, #if street is empty then set linkId
                         roadLinks: @[]
                 )
         if not tblAdminStrKeys.hasKeyOrPut(admStr.hash, admStr):
@@ -495,58 +497,103 @@ proc mapLink2AdminStreet(admStrs: TableRef[AdminStreet, seq[RoadLink]]): TableRe
             discard result.hasKeyOrPut(link.linkId, k)
 
 
-proc findConnectedStrs(admStr: AdminStreet, minCoord: Point, link: RoadLink, byLnks: seq[string],
+proc findConnectedStrs(admStr: AdminStreet, minCoord: Point, link: RoadLink, isRefNode: bool,
                         tblLink2AdmStr: TableRef[string, AdminStreet],
                         street2Sector: TableRef[AdminStreet, Sector]): seq[tuple[distance: float, admStr: AdminStreet]] {.inline.} =
-    for lnkId in byLnks:
+    let
+        byLinks =
+            if isRefNode:
+                link.refLinks
+            else:
+                link.nonRefLinks
+        nodeCoord =
+            if isRefNode:
+                link.refNodeCoord
+            else:
+                link.nonRefNodeCoord
+        d = nodeCoord.distance minCoord
+    for lnkId in byLinks:
         #echo "lnkId:", lnkId
-        if not tblLink2AdmStr.hasKey(lnkId):
+        if not tblLink2AdmStr.hasKey(lnkId): #avoid connected links from other sector areas
             continue
         let refAdmStr = tblLink2AdmStr[lnkId]
-        if street2Sector.hasKey(refAdmStr):
-            continue # already in some sector - ignore it
+        if admStr.hash == refAdmStr.hash:
+            continue # we need only other street - avoid the same street
+        #if street2Sector.hasKey(refAdmStr):
+            #continue # already in some sector - ignore it
         if admStr.hashAdm != refAdmStr.hashAdm:
             continue # we need only street in the same admin area
-        if admStr.hash == refAdmStr.hash:
-            continue # we need only other street
-        let d = link.refNodeCoord.distance minCoord
         result.add (distance: d, admStr: refAdmStr)
 
 
-func adminKey(admStr: AdminStreet, numSector = 0): string =
+func adminKey(admStr: AdminStreet, numSector = 0): string {.inline.}=
     let
-        cityName = admStr.city.pdeName.encodeName
-        dn = admStr.district.pdeName.encodeName
+        cityName = admStr.city.pdeName.decodeName
+        dn = admStr.district.pdeName.decodeName
         distrName = if dn != cityName: dn else: ""
         nSect = if numSector == 0: "" else: fmt"-{numSector}"
     result = fmt"{admStr.postalCode}{nSect} {cityName} {distrName}".strip
 
 
-proc nearestStreets(admStr: AdminStreet, minCoord: Point,
-                    tblLink2AdmStr: TableRef[string, AdminStreet],
-                    numSector: var int,
-                    sectors: var OrderedTableRef[string, Sector],
-                    street2Sector: var TableRef[AdminStreet, Sector],
-                    dstncStr: var seq[tuple[distance: float, admStr: AdminStreet]]) =
+proc addStreet2Sector(admStr: AdminStreet,
+                        numSector: var int,
+                        sectors: var OrderedTableRef[string, Sector],
+                        street2Sector: var TableRef[AdminStreet, Sector]) {.inline.} =
     let
         sectorName = admStr.adminKey(numSector)
     discard sectors.hasKeyOrPut(sectorName, Sector(name: sectorName, streets: newSeq[AdminStreet]()))
     var sector = sectors[sectorName]
     if street2Sector.hasKeyOrPut(admStr, sector):
         return
-    sector.streets.add admStr
-    if sector.countAddresses > 100: #sector.streets.len > 7:
+    if not admStr.isStrNameEmpty:
+        sector.streets.add admStr # only here add street to sector
+    if sector.countAddresses >= 100: #sector.streets.len > 7:
         #echo "sector.countAddresses:", sector.countAddresses
         inc numSector
+
+
+proc isSplitAllStreets(tblAdminStreet: TableRef[AdminStreet, seq[RoadLink]],
+                        street2Sector: var TableRef[AdminStreet, Sector]): bool {.inline.} =
+    #echo "start"
+    result = true
+    var cnt: int
+    for k,v in tblAdminStreet:
+        if k.isStrNameEmpty:
+            continue
+        if not street2Sector.hasKey(k):
+            result = false
+            inc cnt
+            #break
+        #else:
+            #echo "doch"
+    if cnt < 15_714:
+        echo "isSplitAllStreets:", cnt
+    #echo "end"
+
+
+
+proc nearestStreets(admStr: AdminStreet, minCoord: Point,
+                    tblAdminStreet: TableRef[AdminStreet, seq[RoadLink]],
+                    tblLink2AdmStr: TableRef[string, AdminStreet],
+                    numSector: var int,
+                    sectors: var OrderedTableRef[string, Sector],
+                    street2Sector: var TableRef[AdminStreet, Sector],
+                    dstncStr: var seq[tuple[distance: float, admStr: AdminStreet]]) =
     for link in admStr.roadLinks:
         #echo "link.linkId:", link.linkId
-        dstncStr = dstncStr.concat findConnectedStrs(admStr, minCoord, link, link.refLinks, tblLink2AdmStr, street2Sector)
-        dstncStr = dstncStr.concat findConnectedStrs(admStr, minCoord, link, link.nonRefLinks, tblLink2AdmStr, street2Sector)
+        dstncStr = dstncStr.concat findConnectedStrs(admStr, minCoord, link, true, tblLink2AdmStr, street2Sector) #refLinks 
+        dstncStr = dstncStr.concat findConnectedStrs(admStr, minCoord, link, false, tblLink2AdmStr, street2Sector) #nonRefLinks
     let dstncStrCpy = dstncStr.sortedByIt(it.distance)
-    if dstncStrCpy.len == 0:
-        echo "distance+street: empty!:", street2Sector[admStr].name, " ", admStr.street
+    #if dstncStrCpy.len == 0:
+        #echo "distance+street: empty!:", street2Sector[admStr].name, " ", admStr.street
     for dStr in dstncStrCpy:
-        dStr.admStr.nearestStreets(minCoord, tblLink2AdmStr, numSector, sectors, street2Sector, dstncStr)
+        dStr.admStr.addStreet2Sector(numSector, sectors, street2Sector)
+    if isSplitAllStreets(tblAdminStreet, street2Sector):
+        return
+    for dStr in dstncStrCpy:
+        dStr.admStr.nearestStreets(minCoord, tblAdminStreet, tblLink2AdmStr, numSector, sectors, street2Sector, dstncStr)
+
+
 
 
 func sectors2AdminName(sectors: var OrderedTableRef[string, Sector]): TableRef[string, seq[string]] =
@@ -554,8 +601,8 @@ func sectors2AdminName(sectors: var OrderedTableRef[string, Sector]): TableRef[s
     var sectsForDel: seq[string]
     for k,v in sectors:
         if v.streets.len == 0:
-            #{.cast(noSideEffect).}:
-                #echo "sectors2AdminName:", k
+            {.cast(noSideEffect).}:
+                echo "sectors2AdminName:", k , " - no streets"
             sectsForDel.add k
             continue
         let
@@ -615,32 +662,33 @@ proc main() =
         let sDataR = openFileStream "area.data"
         let area = sDataR.readAll().uncompress().fromFlatty(Area)
         #[let tblRoadLinks = area.roadLinks
-        echo tblRoadLinks["52418711"].name.encodeName
-        echo tblRoadLinks["1200131157"].name.encodeName
-        echo tblRoadLinks["990689333"].name.encodeName
-        echo tblRoadLinks["1157468789"].name.encodeName]#
+        echo tblRoadLinks["52418711"].name.decodeName
+        echo tblRoadLinks["1200131157"].name.decodeName
+        echo tblRoadLinks["990689333"].name.decodeName
+        echo tblRoadLinks["1157468789"].name.decodeName]#
         let
             tblAdminStreet = area.splitLinksByStreet()
             tblAdminWithStreet = tblAdminStreet.splitStreetsByAdmin()
             tblLink2AdminStreet = tblAdminStreet.mapLink2AdminStreet()
         #for k,v in tblAdminStreet.pairs:
-            #if k.city.pdeName.encodeName == "Hanau" and k.postalCode == "63452":
-                #echo "admStr: city:", k.city.pdeName.encodeName, ", district:", k.district.pdeName.encodeName, ", street:", k.street, ", hash:", k.hash
+            #if k.city.pdeName.decodeName == "Hanau" and k.postalCode == "63452":
+                #echo "admStr: city:", k.city.pdeName.decodeName, ", district:", k.district.pdeName.decodeName, ", street:", k.street, ", hash:", k.hash
         var
             sectors = newOrderedTable[string, Sector]()
             street2Sector = newTable[AdminStreet, Sector]()
-        for adm, admStr in tblAdminWithStreet:
-            let (minCoord, edgeStreet) = admStr.findEdgeStreet()
-            #echo "adm:", [adm.postalCode, adm.city.pdeName.encodeName, adm.district.pdeName.encodeName, edgeStreet.street].join(", ")
+        for adm, admStrs in tblAdminWithStreet:
+            let (minCoord, edgeStreet) = admStrs.findEdgeStreet()
+            #echo "adm:", [adm.postalCode, adm.city.pdeName.decodeName, adm.district.pdeName.decodeName, edgeStreet.street].join(", ")
             #echo "edgeStreet:", edgeStreet.street
             var
                 numSector = 1
                 dstncStr: seq[tuple[distance: float, admStr: AdminStreet]]
-            edgeStreet.nearestStreets(minCoord, tblLink2AdminStreet, numSector, sectors, street2Sector, dstncStr)
+            edgeStreet.addStreet2Sector(numSector, sectors, street2Sector)
+            edgeStreet.nearestStreets(minCoord, tblAdminStreet, tblLink2AdminStreet, numSector, sectors, street2Sector, dstncStr)
             #break
         let admSectors = sectors2AdminName sectors
         for k,s in admSectors:
-            if s.len == 1:
+            if s.len == 1: #if admin area has only 1 sector after split
                 let
                     nameSector = s[0]
                     sector = sectors[nameSector]
