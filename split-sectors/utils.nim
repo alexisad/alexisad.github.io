@@ -1,4 +1,4 @@
-import sugar, sequtils, strutils, strformat, math
+import sugar, sequtils, strutils, strformat, math, parseutils
 
 type
     Point* = object
@@ -64,41 +64,28 @@ proc getIndex*(xs: seq[string], s: string): int =
 
 
 proc parseAdmins*(x: string, ignoreLeftRight = true): seq[string] {.inline.} =
-    #let chkCity = x.split(",")[3]
-    #if chkCity.split(";").len > 1:
-        #echo ">1 city:", chkCity
-    let adminsTmp =
-        if ignoreLeftRight:
-            x.split(",")
-                .filter(item => (
-                        (item.split ";").len == 1
-                    )
-                )
-        else:
-            x.split(",")
-    if x.split(",").len != adminsTmp.len:
+    if ignoreLeftRight and x.split(";").len > 1:
         return newSeq[string]()
-    let admIds = adminsTmp
+    let admIds = x
+        .split(",")
         .map(item => (
                 let arrLrD = item.split ";"
-                let lrD = arrLrD[0].strip
-                lrD
-                #[if lrD == "":
-                    "0"
-                else:
-                    lrD]#
+                arrLrD[0].strip # take only left
             )
         )
     let cityId = admIds[3].parseInt
     result = collect(newSeq):
-        for i,v in admIds:
-            if v != "":
+        for i, admId in admIds:
+            if admId != "":
                 if i != 3: #not city
-                    $(cityId + v.parseInt)
+                    $(cityId + admId.parseInt)
                 else:
-                    v
+                    admId
             else:
                 ""
 
 
 
+proc isNumber*(value: string): bool {.inline.} =
+    var ignoreMe = 0.0
+    result = parseFloat(value, ignoreMe) == value.len
