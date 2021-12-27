@@ -16,9 +16,12 @@ type
         tileXys*: seq[seq[string]]
 
 type
-    Sector* = ref object
+    AdmSector* = ref object
         name*: string
         streets*: seq[AdminStreet]
+    AreaSectors* = ref object
+        sectorsInAdminNames*: TableRef[string, seq[string]]
+        sectors*: OrderedTableRef[string, AdmSector]
     City* = ref object
         id*: string
         name*: string
@@ -58,6 +61,7 @@ type
         nonRefLinks*: seq[string]
         postalCode*: string
         addresses*: seq[string]
+        urban*: string
     PdeNameType* = enum
         abbreviation = "A - abbreviation", baseName = "B - base name",
         exonym = "E - exonym", shortenedName = "K - shortened name",
@@ -70,7 +74,9 @@ type
         nameType*: PdeNameType
         nameKind*: PdeNameKind
     LangCode* = distinct string
-
+    StreetDistance* = ref object
+        streetA*, streetB*: AdminStreet
+        distance*: float
 proc decodeName*(it: seq[PdeName], lang = "GER".LangCode): string
 
 proc hashCityPc*(x: RoadLink): Hash =
@@ -89,7 +95,7 @@ proc hash*(x: Admin): Hash =
 
 proc hash*(x: AdminStreet): Hash =
     result = x.postalCode.hash !& x.city.pdeName.decodeName.hash !&
-                x.district.pdeName.decodeName.hash !& x.street.hash
+                #[x.district.pdeName.decodeName.hash !&]# x.street.hash
     result = !$result
 
 proc hashAdm*(x: AdminStreet): Hash =
@@ -101,7 +107,7 @@ func countAddresses*(admStr: AdminStreet): int =
     for link in admStr.roadlinks:
         result += link.addresses.len
 
-func countAddresses*(sector: Sector): int =
+func countAddresses*(sector: AdmSector): int =
     for street in sector.streets:
         result += street.countAddresses
 

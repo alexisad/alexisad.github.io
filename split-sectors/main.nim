@@ -7,7 +7,7 @@ import std / [algorithm]
 import flatty, supersnappy
 
 const
-    apikey = "rJQnOk6DBkUYFFQGR31fN7ZZWeoGtkGYI0PJM8uVoo8"
+    apikey = "U8VO_SHRK0j3c33MemrpfkjglfZ24pScllzgLBm63Bk"
     hrCoordReal = "49.95856259839435,8.850124261434395,0.0 49.96396515545882,8.899470891953959,0.0 49.989107714500946,8.942093035419573,0.0 49.99375559635732,8.973836498540546,0.0 49.98852001928919,9.014720749471216,0.0 49.98595544705414,9.046298016450189,0.0 49.993374764204034,9.054906229836575,0.0 50.01241735811533,9.038966773881107,0.0 50.02965494688769,9.03186813780005,0.0 50.0384117586606,9.032281998108914,0.0 50.042818175748586,9.027509152282287,0.0 50.04441439462123,9.022565665862723,0.0 50.04644677958852,9.013523319190714,0.0 50.04425309054112,8.996242389995311,0.0 50.04241418571553,8.987752631175479,0.0 50.04476926168952,8.980317812800713,0.0 50.05134995729781,8.977353932502664,0.0 50.05405939323471,8.980217342282131,0.0 50.06044531552646,8.986546984952541,0.0 50.062896251887224,8.988757336361253,0.0 50.06734631621531,8.99182168717788,0.0 50.06673365070724,8.992977098141527,0.0 50.0668626335698,8.99398180332731,0.0 50.06718803495289,8.994414733080061,0.0 50.06771451792822,8.995464253486665,0.0 50.06829194422368,8.99569356046626,0.0 50.0688014322406,8.995790574957626,0.0 50.06906749605375,8.996778358869724,0.0 50.06879577129238,8.997378084816354,0.0 50.06905051330128,8.998956775175868,0.0 50.06930053266752,8.99941800765802,0.0 50.0695826597326,8.999881101814484,0.0 50.07118974475246,8.99940230955102,0.0 50.07246819127017,8.999262421160052,0.0 50.073681046891316,8.999278572803176,0.0 50.07593045003854,8.998761720223174,0.0 50.07685298579153,8.998697113650673,0.0 50.079516837714955,8.99906860144255,0.0 50.08036829651911,8.999048176213728,0.0 50.08163131412362,8.999132593752917,0.0 50.08380948509669,8.998839123161446,0.0 50.08398524097505,8.998457611392535,0.0 50.08529083589718,8.998731517277907,0.0 50.0858180853043,8.999103246693766,0.0 50.087745007018746,8.999113029046814,0.0 50.08994800500485,8.99887825257364,0.0 50.09095218700986,8.998614129041318,0.0 50.09268435151408,8.997880452562647,0.0 50.093989709477825,8.9992499819895,0.0 50.09529893546212,9.000556974921759,0.0 50.097739470199144,9.003266612926636,0.0 50.11201852058528,9.02981141216353,0.0 50.11661516874831,9.067234864827416,0.0 50.12025635598552,9.07282045477725,0.0 50.14215732616893,9.07477541125969,0.0 50.13214371793553,9.104686488157405,0.0 50.130002073318444,9.11819544464286,0.0 50.12962960360105,9.129525537179045,0.0 50.124042209958354,9.131849658724928,0.0 50.12329717485541,9.139257796152435,0.0 50.12525286726787,9.144487069630674,0.0 50.12804657496021,9.150297373495386,0.0 50.130455597090595,9.155493171369901,0.0 50.133915546952075,9.158535444434747,0.0 50.1367776800252,9.15868265119595,0.0 50.13741151788165,9.163817274408206,0.0 50.14339492987892,9.173004915543089,0.0 50.14755755017878,9.192392814174495,0.0 50.14648131805793,9.200345557307376,0.0 50.138180651937496,9.259625280641485,0.0 50.13309753499998,9.307707323856194,0.0 50.139325423584935,9.327568851365392,0.0 50.12993748742165,9.339142835021836,0.0 50.12858337744752,9.365496359295658,0.0 50.12641773051991,9.372735178643259,0.0 50.11574275323997,9.381663055838633,0.0 50.09423086055464,9.394210342707808,0.0 50.087113888846716,9.404106700966404,0.0 50.084234652636276,9.41068546866214,0.0 50.08332028837411,9.415072180815773,0.0 50.084109152691816,9.419263307077205,0.0 50.08422122075908,9.425175379748403,0.0 50.08359146921259,9.427138246524793,0.0 50.08359146921259,9.433746564671972,0.0 50.09022443676629,9.46096498397125,0.0 50.09085360543011,9.474022801340594,0.0 50.093517639965924,9.48311122533397,0.0 50.09417105978058,9.497057255254838,0.0 50.09552813400177,9.509122921590878,0.0 50.10598134317437,9.5205618000653,0.0 50.114221688388604,9.519935012203698,0.0 50.14498492404182,9.511705614500329,0.0 50.151057005957576,9.529820900852283,0.0 50.16355592364119,9.537067015393063,0.0 50.17319571327903,9.524804360016356,0.0 50.17694399525393,9.501393836115371,0.0 50.192469459564606,9.505852983525081,0.0 50.19496733876523,9.518673032328001,0.0 50.19962499700489,9.516589022864023,0.0 50.21399704559683,9.50504530922025,0.0 50.21870102145308,9.466106812451708,0.0 50.26614431812017,9.43139020351146,0.0 50.2704110296101,9.442662471130737,0.0 50.27772026972424,9.4554185495736,0.0 50.30061968660411,9.419174629647651,0.0 50.3134338989555,9.398350843677145,0.0 50.330902260659,9.396070867111032,0.0 50.34710327756438,9.365823178000584,0.0 50.41660380223247,9.344974529943373,0.0 50.42288128194858,9.245267930092574,0.0 50.42450902384603,9.234516048623957,0.0 50.421660438811095,9.224935164146977,0.0 50.415420082407365,9.218334999285055,0.0 50.40619370176144,9.159039969799737,0.0 50.39988345120526,9.134129670159584,0.0 50.38861790491299,9.116032443925288,0.0 50.38196590399061,9.085373613598946,0.0 50.373828204075195,9.060876585432112,0.0 50.374851912213195,9.039245421406951,0.0 50.37455942642779,9.033894956807094,0.0 50.36909604401242,9.032055311810234,0.0 50.34884219264727,9.036714437078075,0.0 50.34206593823363,9.028913111048201,0.0 50.338055046494205,9.028371352296126,0.0 50.32394508151426,9.03866476858554,0.0 50.31439772920148,9.016777715001732,0.0 50.30756222761449,9.006886141097945,0.0 50.30215231393127,8.999211834250447,0.0 50.30015521042514,8.987558257185748,0.0 50.29616075185897,8.975449906381932,0.0 50.29107641039998,8.972493877077715,0.0 50.27792723722931,8.94907302951354,0.0 50.27618342766435,8.937021525427118,0.0 50.274948190575785,8.92258245921037,0.0 50.25656116848032,8.893022166168203,0.0 50.24522017796395,8.85641288016981,0.0 50.23634884074695,8.855222008654989,0.0 50.22470113569143,8.860339308210316,0.0 50.20947108695584,8.860934343042329,0.0 50.20672916183294,8.839751103022607,0.0 50.20094013589099,8.796432567251937,0.0 50.197435910668744,8.790006191066185,0.0 50.1946134041465,8.79057185680632,0.0 50.18875997039989,8.791839840630303,0.0 50.18371958792864,8.791637049898368,0.0 50.17642594359777,8.789065201919588,0.0 50.17596274342498,8.78995123147805,0.0 50.17430232089517,8.792046274117968,0.0 50.17337983900064,8.792936667239935,0.0 50.173916557905876,8.7938270603619,0.0 50.173195340484554,8.794979333813854,0.0 50.17431909312838,8.796367299562801,0.0 50.17334629386889,8.798724222532709,0.0 50.17103162290417,8.799588427621675,0.0 50.16957231619278,8.79793858154274,0.0 50.16703939070253,8.793905624460896,0.0 50.16438890109903,8.794534137252873,0.0 50.16375141964782,8.79050118017103,0.0 50.16162082784406,8.789139402455083,0.0 50.16103364018217,8.79076306050102,0.0 50.1591545911941,8.790527368204028,0.0 50.1596579151296,8.787280052112155,0.0 50.15856737323834,8.783220906997313,0.0 50.157225133682765,8.783011402733322,0.0 50.1560842004315,8.7835875394593,0.0 50.15568151160696,8.781728189116372,0.0 50.138275414238024,8.77894862521831,0.0 50.13670242407733,8.77838227975314,0.0 50.13690217682525,8.784467717601034,0.0 50.13534508071917,8.794250560713733,0.0 50.13391419097039,8.802588957192343,0.0 50.13357750481077,8.81237180030504,0.0 50.13319873004944,8.816967766868055,0.0 50.12932663828693,8.816967766868055,0.0 50.12356000792097,8.817755646850285,0.0 50.12381257562391,8.812306143639855,0.0 50.12170780404554,8.807447550416098,0.0 50.120865869500825,8.806725327099054,0.0 50.11556134136147,8.803179867179015,0.0 50.11324568846011,8.805346537130145,0.0 50.106340167703365,8.80816977373314,0.0 50.10335027363762,8.817164736863607,0.0 50.100570768108895,8.819594033475484,0.0 50.09652756307581,8.818280900171766,0.0 50.090630610745976,8.820775853448833,0.0 50.08907200924542,8.82274555340441,0.0 50.08818737503363,8.82530616334666,0.0 50.0851963479583,8.842048612969064,0.0 50.07200832727764,8.835811229776404,0.0 50.07049126160658,8.824386970034057,0.0 50.069570879337796,8.78607195954587,0.0 50.0601144750599,8.77637532098599,0.0 50.048860122033034,8.752320198404746,0.0 50.01891548545801,8.76089799405387,0.0 50.01232515932821,8.762762732238464,0.0 50.00777131509019,8.767797525336864,0.0 50.00381631081293,8.766492208607648,0.0 50.002510604252436,8.768218421614016,0.0 50.00128762337993,8.775689982557171,0.0 50.002779059304025,8.78613160499326,0.0 50.00131196288862,8.790503627643895,0.0 49.99779764073278,8.794819888766732,0.0 49.99865804458652,8.799875040273319,0.0 50.00348400921596,8.811082687365706,0.0 50.00061646545155,8.81260605687341,0.0 50.00033669592648,8.815217547458044,0.0 49.99781869693746,8.815326359565736,0.0 49.99648969985931,8.811844372119557,0.0 49.99383159550032,8.813150117411876,0.0 49.994111402878666,8.819134783334993,0.0 49.98877967758542,8.820035779675596,0.0 49.98385558936126,8.814211125129365,0.0 49.97969399505043,8.814642581021678,0.0 49.9713003514494,8.818202092133264,0.0 49.96810899538112,8.812377437587031,0.0 49.96519496372066,8.813456077317817,0.0 49.962003202814614,8.82165373927177,0.0 49.96255830686967,8.839127702910474,0.0 49.96380726759058,8.846246725133646,0.0 49.95856259839435,8.850124261434395,0.0"
     border = "63688 Ober-Seemen,63697 Merkenfritz,63697 Hirzenhain,63683 Lißberg,63683 Eckartsborn,63691 Bobenhausen,63683 Wippenbach,63683 Selters (Ortenberg),63683 Bleichenbach,63654 Büdingen>city,63674 Enzheim,63674 Lindheim,63674 Oberau,63674 Höchst,61130 Eichen,61130 Nidderau Heldenbergen,61130 Windecken,61137 Schöneck,61137 Oberdorfelden,61138 Niederdorfelden>city,63477 Maintal>city,63165 Mühlheim am Main>city,63075 Waldheim,63179 Obertshausen>city,63150 Heusenstamm>city,63128 Dietzenbach,63322 Waldacker,63322 Rödermark Ober-Roden,63110 Rodgau>city,63533 Mainhausen>city,63538 Großkrotzenburg>city,63517 Rodenbach>city,63579 Neuses,63579 Horbach,63589 Waldrode,63599 Biebergemünd>city,63639 Flörsbachtal>city,63637 Pfaffenhausen>city,63628 Alsberg,63628 Kerbersdorf,63628 Schönhof,63633 Wettges"
     sectorBorderPonts = getBorderPoints(hrCoordReal) #get seq[Point] of polygon sector
@@ -485,11 +485,33 @@ proc filterRoadLinks(strm: Stream, tblDistrict: TableRef[string, District], tblL
                 link.addresses.add pdeNames.decodeName
                 #for strName in pdeNames:
                     #echo "strName:", strName.lang.string, " ", strName.name
+        of "LINK_ATTRIBUTE":
+            readHead:
+                let
+                    iUrban = header.getIndex "URBAN"
+                    urban = arrRow[iUrban]
+                    link = area.roadLinks[linkId]
+                link.urban =
+                    if link.addresses.len > 0:
+                        "Y"
+                    else:
+                        urban
         else:
             echo "strange layer name:", layer
         #of "name":
     strm.close
     result = area
+
+
+proc removeNotUrbanRoadLinks(area: Area) =
+    var lnksForRemove: seq[string] = collect:
+        for lnk, roadLnk in area.roadLinks:
+            if roadLnk.urban != "Y":
+                lnk
+    for lnk in lnksForRemove:
+        area.roadLinks.del lnk
+        echo "lnk removed:": lnk
+
 
 
 proc splitLinksByStreet(area: Area): TableRef[AdminStreet, seq[RoadLink]] =
@@ -503,10 +525,6 @@ proc splitLinksByStreet(area: Area): TableRef[AdminStreet, seq[RoadLink]] =
                 linkId
             else:
                 link.name.decodeName
-        if linkId == "942399477":
-            echo "strNameLink:", strName, link.isStrNameEmpty
-        #if strName == "":
-            #strName = linkId  #if street is empty then set linkId
         var admStr = AdminStreet(
                         postalCode: link.postalCode,
                         city: area.cities[link.cityId],
@@ -520,6 +538,11 @@ proc splitLinksByStreet(area: Area): TableRef[AdminStreet, seq[RoadLink]] =
         admStr = tblAdminStrKeys[admStr.hash]
         admStr.roadlinks.add link
         result[admStr].add link
+    #for admStr, rdLinks in result:
+        #var 
+        #for link in rdLinks:
+            #discard
+
 
 
 proc splitStreetsByAdmin(admStr: TableRef[AdminStreet, seq[RoadLink]]): TableRef[Admin, seq[AdminStreet]] =
@@ -537,6 +560,113 @@ proc splitStreetsByAdmin(admStr: TableRef[AdminStreet, seq[RoadLink]]): TableRef
         adm = tblAdminKeys[adm.hash]
         result[adm].add k
 
+func getMinDistance(roadLinks: seq[RoadLink], cP: Point): float =
+    var
+        minDist = float.high
+    for link in roadLinks:
+        let
+            dR = link.refNodeCoord.distance(cP)
+            dNr = link.nonRefNodeCoord.distance(cP)
+        if minDist > dR:
+            minDist = dR
+        if minDist > dNr:
+            minDist = dNr
+    minDist
+
+
+func getMinDistance(streetA, streetB: AdminStreet): float =
+    var
+        minDist = float.high
+    let
+        roadLinksA = streetA.roadlinks
+        roadLinksB = streetB.roadlinks
+    for linkA in roadLinksA:
+        let
+            dR = roadLinksB.getMinDistance(linkA.refNodeCoord)
+            dNr = roadLinksB.getMinDistance(linkA.nonRefNodeCoord)
+        if minDist > dR:
+            minDist = dR
+        if minDist > dNr:
+            minDist = dNr
+    minDist
+
+
+proc steetDistances(streets: seq[AdminStreet]): TableRef[string, StreetDistance] =
+    result = newTable[string, StreetDistance]()
+    for streetA in streets:
+        let
+            hA = streetA.hash
+        for streetB in streets:
+            let
+                hB = streetB.hash
+            if hA == hB:
+                continue #don't check a distance between the same streets
+            let
+                hAhB = [$hA, $hB].join"_"
+                hBhA = [$hB, $hA].join"_"
+            if result.hasKey(hAhB) or result.hasKey(hBhA):
+                #echo "hA:", streetA.street
+                #echo "hB:", streetB.street
+                continue
+            let
+                d = streetA.getMinDistance streetB
+            result[hAhB] = StreetDistance(streetA: streetA, streetB: streetB, distance: d)
+
+
+proc nearestStreet(fStreet: AdminStreet,
+                    streetDists: TableRef[string, StreetDistance],
+                    collectedHstreets: var seq[string]): AdminStreet =
+    let hfStreet = fStreet.hash
+    var sStreets: seq[AdminStreet]
+    for hAb, streetD in streetDists:
+        let arrHab = hAb.split"_"
+        if collectedHstreets.contains(arrHab[0]) or
+            collectedHstreets.contains(arrHab[1]):
+                continue
+        if $hfStreet == arrHab[0] or $hfStreet == arrHab[1]:
+            #echo "hfStreet:", hfStreet, " ", arrHab[0], " ", arrHab[1]
+            if hfStreet == streetD.streetA.hash:
+                sStreets.add streetD.streetB
+            else:
+                sStreets.add streetD.streetA
+    collectedHstreets.add $hfStreet
+    #echo "sStreets.len:", sStreets.len
+    sStreets.sort do (a, b: AdminStreet) -> int:
+        let
+            hA = a.hash
+            hB = b.hash
+            hfStreetHa = [$hfStreet, $hA].join"_"
+            hAhfStreet = [$hA, $hfStreet].join"_"
+            hfStreetHb = [$hfStreet, $hB].join"_"
+            hBhfStreet = [$hB, $hfStreet].join"_"
+        var
+            distA =
+                if streetDists.hasKey(hfStreetHa):
+                    streetDists[hfStreetHa].distance
+                else:
+                    streetDists[hAhfStreet].distance
+            distB =
+                if streetDists.hasKey(hfStreetHb):
+                    streetDists[hfStreetHb].distance
+                else:
+                    streetDists[hBhfStreet].distance
+        cmp(distA, distB)
+    when false:
+        for s in sStreets:
+            let
+                hS = s.hash
+                hfStreetHs = [$hfStreet, $hS].join"_"
+                hShfStreet = [$hS, $hfStreet].join"_"
+            echo "nearestStreet s.street", s.street
+            if streetDists.hasKey(hfStreetHs):
+                echo "dist:", $streetDists[hfStreetHs]
+            else:
+                if streetDists.hasKey(hShfStreet):
+                    echo "error!!!"    
+                echo ""
+    sStreets[0]
+
+
 
 func getMinLat(roadLinks: seq[RoadLink]): float =
     var
@@ -547,6 +677,30 @@ func getMinLat(roadLinks: seq[RoadLink]): float =
         if minLat > link.nonRefNodeCoord.y:
             minLat = link.nonRefNodeCoord.y
     minLat
+
+
+proc sortStreets(streets: var seq[AdminStreet]) =
+    if streets.len <= 1: #then don't sort it
+        return
+    let streetDists = streets.steetDistances
+    echo "streetDists.len:", streetDists.len, " : ", streets.len
+    var
+        collectedHstreets: seq[string]
+        collectedStreets: seq[AdminStreet]
+    # determin first street
+    streets.sort do (a, b: AdminStreet) -> int:
+        let
+            aMinLat = a.roadlinks.getMinLat
+            bMinLat = b.roadlinks.getMinLat
+        cmp(aMinLat, bMinLat)
+    var
+        fStreet = streets[0]
+    collectedStreets.add fStreet
+    #collectedHstreets.add $fStreet.hash
+    while collectedHstreets.len < streets.len - 1:
+        fStreet = fStreet.nearestStreet(streetDists, collectedHstreets)
+        collectedStreets.add fStreet
+    streets = collectedStreets
 
 
 proc findEdgeStreet(seqAdmStr: seq[AdminStreet]): tuple[minCoord: Point, admStr: AdminStreet] =
@@ -579,7 +733,7 @@ proc mapLink2AdminStreet(admStrs: TableRef[AdminStreet, seq[RoadLink]]): TableRe
 
 proc findConnectedStrs(admStr: AdminStreet, minCoord: Point, link: RoadLink, isRefNode: bool,
                         tblLink2AdmStr: TableRef[string, AdminStreet],
-                        street2Sector: TableRef[AdminStreet, Sector]): seq[tuple[distance: float, admStr: AdminStreet]] {.inline.} =
+                        street2Sector: TableRef[AdminStreet, AdmSector]): seq[tuple[distance: float, admStr: AdminStreet]] {.inline.} =
     let
         byLinks =
             if isRefNode:
@@ -608,7 +762,7 @@ proc findConnectedStrs(admStr: AdminStreet, minCoord: Point, link: RoadLink, isR
         result.add (distance: d, admStr: refAdmStr)
 
 
-func adminKey(admStr: AdminStreet, numSector = 0): string {.inline.}=
+func adminKey(admStr: AdminStreet, numSector = 0): string {.inline.} =
     let
         cityName = admStr.city.pdeName.decodeName
         dn = admStr.district.pdeName.decodeName
@@ -617,26 +771,60 @@ func adminKey(admStr: AdminStreet, numSector = 0): string {.inline.}=
     result = fmt"{admStr.postalCode}{nSect} {cityName} {distrName}".strip
 
 
-proc addStreet2Sector(admStr: AdminStreet,
-                        numSector: var int,
-                        sectors: var OrderedTableRef[string, Sector],
-                        street2Sector: var TableRef[AdminStreet, Sector]): bool {.inline.} =
-    result = true
+proc createSector(admStr: AdminStreet,
+                        numSector: int,
+                        sectors: var OrderedTableRef[string, AdmSector]): string =
     let
         sectorName = admStr.adminKey(numSector)
-    discard sectors.hasKeyOrPut(sectorName, Sector(name: sectorName, streets: newSeq[AdminStreet]()))
-    var sector = sectors[sectorName]
-    if street2Sector.hasKeyOrPut(admStr, sector):
-        return false
-    if not admStr.isStrNameEmpty:
+    discard sectors.hasKeyOrPut(sectorName,
+                                    AdmSector(name: sectorName, streets: newSeq[AdminStreet]())
+                                            )
+    sectorName
+
+
+
+proc addStreet2Sector(admStr: AdminStreet,
+                        numSectPc: CountTableRef[string],
+                        sectors: var OrderedTableRef[string, AdmSector],
+                        street2Sector: var TableRef[AdminStreet, AdmSector],
+                        lastStr: bool): bool {.inline.} =
+    result = true
+    while true:
+        if admStr.isStrNameEmpty:
+            break
+        let
+            postalCode = admStr.postalCode
+        #if not numSectPc.hasKey(postalCode):
+            #numSectPc.inc postalCode
+        let
+            numSector = numSectPc[postalCode]
+            sectorName = createSector(admStr, numSector, sectors)
+        var sector = sectors[sectorName]
+        #echo "adminKey:", admStr.adminKey(numSector)
+        #if street2Sector.hasKeyOrPut(admStr, sector):
+            #echo "!!!!"
+            #return false
+        if admStr.countAddresses < 150 and
+                (admStr.countAddresses + sector.countAddresses) >= 150:
+            numSectPc.inc postalCode
+            continue
+        if lastStr and numSector > 1 and (admStr.countAddresses + sector.countAddresses) < 50:
+            let prevSecName = admStr.adminKey(numSector - 1)
+            if sectors.hasKey prevSecName: # if exists previous sector name with the same pc+city+district
+                #echo "last!!!: prevSecName:", prevSecName
+                sectors[prevSecName].streets = sectors[prevSecName].streets.concat sector.streets
+                sectors[prevSecName].streets.add admStr
+                sectors.del sectorName
+                break
         sector.streets.add admStr # only here add street to sector
-    if sector.countAddresses >= 100: #sector.streets.len > 7:
-        #echo "sector.countAddresses:", sector.countAddresses
-        inc numSector
+        if sector.countAddresses >= 100: #sector.streets.len > 7:
+            #echo "sector.countAddresses:", sector.countAddresses
+            numSectPc.inc postalCode
+        break
 
 
 proc isSplitAllStreets(tblAdminStreet: TableRef[AdminStreet, seq[RoadLink]],
-                        street2Sector: var TableRef[AdminStreet, Sector]): bool {.inline.} =
+                        street2Sector: var TableRef[AdminStreet, AdmSector]): bool {.inline.} =
     #echo "start"
     result = true
     var cnt: int
@@ -658,9 +846,9 @@ proc isSplitAllStreets(tblAdminStreet: TableRef[AdminStreet, seq[RoadLink]],
 proc nearestStreets(admStr: AdminStreet, minCoord: Point,
                     tblAdminStreet: TableRef[AdminStreet, seq[RoadLink]],
                     tblLink2AdmStr: TableRef[string, AdminStreet],
-                    numSector: var int,
-                    sectors: var OrderedTableRef[string, Sector],
-                    street2Sector: var TableRef[AdminStreet, Sector],
+                    numSectPc: CountTableRef[string],
+                    sectors: var OrderedTableRef[string, AdmSector],
+                    street2Sector: var TableRef[AdminStreet, AdmSector],
                     dstncStr: var seq[tuple[distance: float, admStr: AdminStreet]]) =
     for link in admStr.roadLinks:
         echo "link.linkId:", link.linkId
@@ -672,19 +860,19 @@ proc nearestStreets(admStr: AdminStreet, minCoord: Point,
         #echo "distance+street: empty!:", street2Sector[admStr].name, " ", admStr.street
     var alreadyAddedStrs: seq[AdminStreet]
     for dStr in dstncStrCpy:
-        if not dStr.admStr.addStreet2Sector(numSector, sectors, street2Sector):
+        if not dStr.admStr.addStreet2Sector(numSectPc, sectors, street2Sector, false):
             echo "dStr.admStr.street:", dStr.admStr.street
             alreadyAddedStrs.add dStr.admStr
     #if isSplitAllStreets(tblAdminStreet, street2Sector):
         #return
     for dStr in dstncStrCpy:
         if not alreadyAddedStrs.contains(dStr.admStr):
-            dStr.admStr.nearestStreets(minCoord, tblAdminStreet, tblLink2AdmStr, numSector, sectors, street2Sector, dstncStr)
+            dStr.admStr.nearestStreets(minCoord, tblAdminStreet, tblLink2AdmStr, numSectPc, sectors, street2Sector, dstncStr)
 
 
 
 
-func sectors2AdminName(sectors: var OrderedTableRef[string, Sector]): TableRef[string, seq[string]] =
+func sectors2AdminName(sectors: var OrderedTableRef[string, AdmSector]): TableRef[string, seq[string]] =
     result = newTable[string, seq[string]]()
     var sectsForDel: seq[string]
     for k,v in sectors:
@@ -750,9 +938,10 @@ proc main() =
                 ("ROAD_GEOM", 0),
                 ("ROAD_NAME", 0),
                 ("LINK", 0),
-                ("POINT_ADDRESS", 13)
+                ("POINT_ADDRESS", 13),
+                ("LINK_ATTRIBUTE", 0)
             ]
-        getRoadLinks(layers, sectorBorderPonts, apikey, 2, 5, "roadLinks.txt")
+        getRoadLinks(layers, sectorBorderPonts, apikey, 1, 5, "roadLinks.txt")
     when false: #get list of all districtIds of whole main area
         let tblDistrict = getDistricts border
         let data = tblDistrict.toFlatty().compress()
@@ -777,8 +966,9 @@ proc main() =
         #tblRoadLinks.clear
     when true:
         let sDataR = openFileStream "area.data"
-        let area = sDataR.readAll().uncompress().fromFlatty(Area)
+        var area = sDataR.readAll().uncompress().fromFlatty(Area)
         area.fixLinks "fixLinkAdmin.csv"
+        area.removeNotUrbanRoadLinks
         #quit 0
         #[let tblRoadLinks = area.roadLinks
         echo tblRoadLinks["52418711"].name.decodeName
@@ -788,24 +978,30 @@ proc main() =
         let
             tblAdminStreet = area.splitLinksByStreet()
             tblAdminWithStreet = tblAdminStreet.splitStreetsByAdmin()
-            tblLink2AdmStreet = tblAdminStreet.mapLink2AdminStreet()
+            #tblLink2AdmStreet = tblAdminStreet.mapLink2AdminStreet()
         #for k,v in tblAdminStreet.pairs:
             #if k.city.pdeName.decodeName == "Hanau" and k.postalCode == "63452":
                 #echo "admStr: city:", k.city.pdeName.decodeName, ", district:", k.district.pdeName.decodeName, ", street:", k.street, ", hash:", k.hash
         var
-            sectors = newOrderedTable[string, Sector]()
-            street2Sector = newTable[AdminStreet, Sector]()
+            sectors = newOrderedTable[string, AdmSector]()
+            street2Sector = newTable[AdminStreet, AdmSector]()
+            numSectPc = newCountTable[string]()
+            cP = Point(y: 0, x: 0)
         for adm, admStrs in tblAdminWithStreet:
-            var admStrsSorted = admStrs
-            admStrsSorted.sort do (a, b: AdminStreet) -> int:
-                let
-                    aMinLat = a.roadlinks.getMinLat
-                    bMinLat = b.roadlinks.getMinLat
-                cmp(aMinLat, bMinLat)
-            var
-                numSector = 1
-            for admStr in admStrsSorted:
-                if not admStr.addStreet2Sector(numSector, sectors, street2Sector):
+            var admStrsSorted = admStrs.filterIt(not it.isStrNameEmpty)
+            when false:
+                admStrsSorted.sort do (a, b: AdminStreet) -> int:
+                    let
+                        aMinDist = a.roadlinks.getMinDistance cP
+                        bMinDist = b.roadlinks.getMinDistance cP
+                    cmp(aMinDist, bMinDist)
+            admStrsSorted.sortStreets()
+            echo "adm:", [adm.postalCode, adm.city.pdeName.decodeName, adm.district.pdeName.decodeName].join" ", ":", admStrsSorted.len
+            if admStrsSorted.len > 0:
+                numSectPc.inc adm.postalCode
+            for i, admStr in admStrsSorted:
+                echo "admStrsSorted admStr:", admStr.street, " :", admStr.adminKey
+                if not admStr.addStreet2Sector(numSectPc, sectors, street2Sector, i == admStrsSorted.high):
                     echo "added already:", admStr.street
             when false:
                 let (minCoord, edgeStreet) = admStrs.findEdgeStreet()
@@ -817,14 +1013,27 @@ proc main() =
                 discard edgeStreet.addStreet2Sector(numSector, sectors, street2Sector)
                 edgeStreet.nearestStreets(minCoord, tblAdminStreet, tblLink2AdmStreet, numSector, sectors, street2Sector, dstncStr)
                 #break
-        let admSectors = sectors2AdminName sectors
-        for k,s in admSectors:
-            echo "AdminName:", k
-            if s.len == 1: #if admin area has only 1 sector after split
+        let admSectors = sectors2AdminName sectors #Distribute sectors by their own admin names(PC+city+district)
+        let aSects = AreaSectors(sectorsInAdminNames: admSectors, sectors: sectors)
+        let sData = openFileStream("areaSectors.data", fmWrite)
+        sData.write aSects.toFlatty()#.compress()
+        sData.close
+        #check
+        for admName, sectorNames in admSectors: #check & test
+            echo "AdminName:", admName
+            for sectName in sectorNames:
+                #echo "sectName:", sectName
                 let
-                    nameSector = s[0]
+                    sector = sectors[sectName]
+                if sector.streets.len == 1: # some sector has only one street
+                    echo "sector.streets.len:", sectName, " ", sector.streets[0].street, " cnt addr:", sector.streets[0].countAddresses
+                if sector.streets.len == 0: # some sector has zero number of streets
+                    echo "sector has zero number of streets:", sectName
+            if sectorNames.len == 1: #if admin area has only 1 sector after split
+                let
+                    nameSector = sectorNames[0]
                     sector = sectors[nameSector]
-                if sector.countAddresses > 50:
+                if sector.countAddresses > 50: #check only for lower count of addresses
                     continue
                 echo "only 1 sector:", nameSector, " :", sector.countAddresses
                 for admStr in sector.streets:
@@ -835,10 +1044,10 @@ proc main() =
                         echo "linkId:", link.linkId, ", distr:", link.districtId
                     echo "admStr.roadlinks:", linkIds.join","
                     #quit 0
-            elif s.len == 0:
-                echo "no sectors:", k
+            elif sectorNames.len == 0:
+                echo "no sectors in admin area:", admName
         when true:
-            for nameSector in admSectors["63452 Hanau"]:
+            for nameSector in admSectors["63477 Maintal Dörnigheim"]:
                 let sector = sectors[nameSector]
                 echo "+"
                 echo "+nameSector:", nameSector, " :", sector.countAddresses
