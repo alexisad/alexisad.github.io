@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+	<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+	<title>Map container resize & capture</title>
+	<link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.1/mapsjs-ui.css" />
+	<script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-core.js"></script>
+	<script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-service.js"></script>
+	<script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-ui.js"></script>
+	<script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-mapevents.js"></script>
+</head>
+
+<body id="markers-on-the-map">
+	<div class="page-header">
+		<h1>Map container resize & capture</h1>
+		<p>Tap on the map for resize & capture... and wait util the map is completely loaded & rendered</p>
+		<div id="map" style="width: 200px; height: 200px; position: absolute; overflow: visible;"></div>
+		<script>
+			//
+			//		author Alexander Sadovoy
+			//		(C) HERE 2022
+			//
+
+			function capture(map) {
+				setTimeout(() => {
+					map.capture(function(canvas) {
+						if (canvas) {
+							const dataURL = canvas.toDataURL("image/png", 1.0);
+							const w = window.open("captured");
+							w.document.write('<img src="' + dataURL + '"/>');
+						} else {
+							alert('Capturing is not supported');
+						}
+					}, [ui]);
+				});
+			}
+
+
+
+			//url parameters
+			var query_string = {};
+			var query = window.location.search.substring(1);
+			var vars = query.split("&");
+
+
+			for (var i = 0; i < vars.length; i++) {
+				var pair = vars[i].split("=");
+				if (typeof query_string[pair[0]] === "undefined") {
+					query_string[pair[0]] = decodeURIComponent(pair[1]);
+				} else if (typeof query_string[pair[0]] === "string") {
+					var arr = [query_string[pair[0]], decodeURIComponent(pair[1])];
+					query_string[pair[0]] = arr;
+				} else {
+					query_string[pair[0]].push(decodeURIComponent(pair[1]));
+				}
+			}
+
+			var apikey = query_string.apikey;
+
+
+
+
+			/**
+			 * Boilerplate map initialization code starts below:
+			 */
+
+			//Step 1: initialize communication with the platform
+			// In your own code, replace variable window.apikey with your own apikey
+
+			var platform = new H.service.Platform({
+				apikey: apikey
+			});
+			var defaultLayers = platform.createDefaultLayers();
+
+			//Step 2: initialize a map
+			var map = new H.Map(document.getElementById('map'),
+				defaultLayers.vector.normal.map, {
+					center: {
+						lat: 52.51477270923461,
+						lng: 13.39846691425174
+					},
+					zoom: 12,
+					pixelRatio: window.devicePixelRatio || 1
+				});
+
+			// Create the default UI components
+			var ui = H.ui.UI.createDefault(map, defaultLayers);
+
+
+			// add a resize listener to make sure that the map occupies the whole container
+			let resizeMap = () => map.getViewPort().resize();
+			window.addEventListener('resize', () => resizeMap);
+
+			//Step 3: make the map interactive
+			// MapEvents enables the event system
+			// Behavior implements default interactions for pan/zoom (also on mobile touch environments)
+			var behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
+
+
+			map.addEventListener("tap", e => {
+				//console.log("tap");
+				let onViewEnd = e => {
+					//console.log("mapviewchangeend");
+					map.removeEventListener("mapviewchangeend", onViewEnd);
+
+					let onRender = e => {
+						map.getEngine().removeEventListener("render", onRender);
+						//console.log("render");
+						capture(map);
+					}
+					map.getEngine().addEventListener("render", onRender);
+
+
+				}
+				map.addEventListener("mapviewchangeend", onViewEnd);
+				document.getElementById("map").style.height = "250%";
+				document.getElementById("map").style.width = "250%";
+				map.setCenter({ //additional load for test purposes
+					lat: 20.6783289,
+					lng: -103.3551369
+				});
+				map.setZoom(14);
+
+
+			});
+
+			new ResizeObserver(resizeMap).observe(document.getElementById('map')); //https://stackoverflow.com/questions/6492683/how-to-detect-divs-dimension-changed
+		</script>
+</body>
+
+</html>
