@@ -1016,7 +1016,7 @@ proc main() =
         let admSectors = sectors2AdminName sectors #Distribute sectors by their own admin names(PC+city+district)
         let aSects = AreaSectors(sectorsInAdminNames: admSectors, sectors: sectors)
         let sData = openFileStream("areaSectors.data", fmWrite)
-        sData.write aSects.toFlatty()#.compress()
+        sData.write aSects.toFlatty().compress()
         sData.close
         #check
         for admName, sectorNames in admSectors: #check & test
@@ -1047,6 +1047,9 @@ proc main() =
             elif sectorNames.len == 0:
                 echo "no sectors in admin area:", admName
         when true:
+            for admName, sectName in aSects.sectorsInAdminNames:
+                echo "admName:", admName
+        when false:
             for nameSector in admSectors["63477 Maintal Dörnigheim"]:
                 let sector = sectors[nameSector]
                 echo "+"
