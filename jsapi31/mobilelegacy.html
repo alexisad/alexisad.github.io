@@ -28,7 +28,8 @@
 </body>
 
 <script>
-	document.getElementById('br-info').innerHTML = "Browser:" + window.navigator.userAgent;
+	var brInfo = document.getElementById('br-info');
+	brInfo.innerHTML = "Browser:" + window.navigator.userAgent;
 
 	//url parameters
 	var query_string = {};
@@ -58,6 +59,10 @@
 	var platform = new H.service.Platform({
 		apikey: apikey
 	});
+	const service = platform.getSearchService();
+		service.geocode({
+		  'q': '5 Rue Daunou, 75000 Paris, France'
+		}, console.log, (r) => {brInfo.innerHTML += r.error_description || " geocode error"});
 
 	var defaultLayers = platform.createDefaultLayers();
 	console.log("defaultLayers:", defaultLayers, H.Map.EngineType.P2D);
@@ -84,6 +89,8 @@
 
 	// Create the default UI components
 	var ui = H.ui.UI.createDefault(map, defaultLayers);
+	
+	
 </script>
 
 
