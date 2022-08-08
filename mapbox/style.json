@@ -1506,7 +1506,7 @@
 				"visibility": "visible"
 			},
 			"paint": {
-				"line-width": 0,
+				"line-width": 0.5,
 				"line-color": "rgba(82, 103, 110, 1)"
 			}
 		},
@@ -1526,7 +1526,7 @@
 				"visibility": "visible"
 			},
 			"paint": {
-				"line-width": 0,
+				"line-width": 0.25,
 				"line-color": "rgba(47, 68, 75, 1)"
 			}
 		},
