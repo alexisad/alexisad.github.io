@@ -15,7 +15,7 @@
 			"id": "background",
 			"type": "background",
 			"paint": {
-				"background-color": "rgba(255, 0, 0, 1)"
+				"background-color": "#444423" /*"rgba(255, 0, 0, 1)"*/
 			}
 		},
 		{
