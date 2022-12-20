@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+	<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+	<title>Map with postcodes from the Advanced Data Sets</title>
+	<link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.1/mapsjs-ui.css" />
+	<script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-core.js"></script>
+	<script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-core-legacy.js"></script>
+	<script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-service.js"></script>
+	<script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-service-legacy.js"></script>
+	<script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-ui.js"></script>
+	<script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-mapevents.js"></script>
+</head>
+
+<body>
+
+	<span id="br-info">Browser:</span>
+	<div id="map" style="width: 90%; height: 90%; position: absolute; top: 120px;"></div>
+
+</body>
+
+<script>
+	var brInfo = document.getElementById('br-info');
+	brInfo.innerHTML = "Browser:" + window.navigator.userAgent;
+
+	//url parameters
+	var query_string = {};
+	var query = window.location.search.substring(1);
+	var vars = query.split("&");
+
+
+
+	for (var i = 0; i < vars.length; i++) {
+		var pair = vars[i].split("=");
+		if (typeof query_string[pair[0]] === "undefined") {
+			query_string[pair[0]] = decodeURIComponent(pair[1]);
+		} else if (typeof query_string[pair[0]] === "string") {
+			var arr = [query_string[pair[0]], decodeURIComponent(pair[1])];
+			query_string[pair[0]] = arr;
+		} else {
+			query_string[pair[0]].push(decodeURIComponent(pair[1]));
+		}
+	}
+
+	console.log("vars:", vars, query_string);
+
+	var apikey = query_string.apiKey || query_string.apikey;
+
+
+	// In your own code, replace variable window.apikey with your own apikey
+	var platform = new H.service.Platform({
+		apikey: apikey
+	});
+	const service = platform.getSearchService();
+	service.geocode({
+		'q': '5 Rue Daunou, 75000 Paris, France'
+	}, console.log, (r) => {
+		brInfo.innerHTML += r.error_description || " geocode error"
+	});
+
+	var defaultLayers = platform.createDefaultLayers();
+	console.log("defaultLayers:", defaultLayers, H.Map.EngineType.P2D);
+
+	//Step 2: initialize a map  - not specificing a location will give a whole world view.
+	var map = new H.Map(document.getElementById('map'),
+		defaultLayers.vector.normal.map, {
+			//engineType: H.Map.EngineType.P2D,
+			pixelRatio: window.devicePixelRatio || 1
+		});
+	// add a resize listener to make sure that the map occupies the whole container
+	window.addEventListener('resize', () => map.getViewPort().resize());
+
+	map.setCenter({
+		lat: -37.764661480,
+		lng: 144.815784
+	});
+	map.setZoom(5);
+
+	//Step 3: make the map interactive
+	// MapEvents enables the event system
+	// Behavior implements default interactions for pan/zoom (also on mobile touch environments)
+	var behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
+	behavior.disable(H.mapevents.Behavior.Feature.FRACTIONAL_ZOOM);
+
+	// Create the default UI components
+	var ui = H.ui.UI.createDefault(map, defaultLayers);
+</script>
+
+
+</html>
