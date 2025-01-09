@@ -1,0 +1,60 @@
+<!DOCTYPE html >
+<html>
+
+<head>
+    <title>"Show up"</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+    <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.1/mapsjs-ui.css" />
+    <script type="text/javascript" charset="UTF-8" src="https://js.api.here.com/v3/3.1/mapsjs-core.js"></script>
+    <script type="text/javascript" charset="UTF-8" src="https://js.api.here.com/v3/3.1/mapsjs-harp.js"></script>
+    <script type="text/javascript" charset="UTF-8" src="https://js.api.here.com/v3/3.1/mapsjs-service.js"></script>
+    <script type="text/javascript" charset="UTF-8" src="https://js.api.here.com/v3/3.1/mapsjs-ui.js"></script>
+    <script type="text/javascript" charset="UTF-8" src="https://js.api.here.com/v3/3.1/mapsjs-mapevents.js"></script>
+</head>
+
+<body>
+    <div id="mapContainer" style="width: 100%; height: 92%; position: absolute; overflow: visible;">
+    </div>
+    <script type="text/javascript">
+/*
+	author Alex Sadovoy
+	(C) HERE 2024
+	*/
+
+    const engineType = H.Map.EngineType['HARP'];
+	
+	// Create a platform object to communicate with the HERE REST APIs
+	var platform = new H.service.Platform({
+		apikey: "Wih-QRVkFDjrSp4Q0tPRHUGHwy_VY_wfFOzAEaFNmms"
+	}),
+	defaultLayers = platform.createDefaultLayers({
+        engineType: engineType
+    });
+
+	//console.log("defaultLayers:", defaultLayers);
+
+
+	// Instantiate a map in the 'map' div, set the base map to normal
+	var map = new H.Map(document.getElementById('mapContainer'), defaultLayers.vector.normal.map, {
+		engineType: engineType,
+        center: {lat: 50.13, lng: 8.54},
+		zoom: 10,
+		pixelRatio: window.devicePixelRatio || 1
+	});
+
+
+    window.addEventListener('resize', function() { map.getViewPort().resize(); });
+
+	// Enable the map event system
+	var mapevents = new H.mapevents.MapEvents(map);
+
+	// Enable map interaction (pan, zoom, pinch-to-zoom)
+	var behavior = new H.mapevents.Behavior(mapevents);
+
+	// Enable the default UI
+	var ui = H.ui.UI.createDefault(map, defaultLayers, 'en-US');
+    </script>
+</body>
+
+</html>
