@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>First Atlas for Kids</title>
+    <script src="https://js.api.here.com/v3/3.2/mapsjs-core.js"></script>
+    <script src="https://js.api.here.com/v3/3.2/mapsjs-service.js"></script>
+    <script src="https://js.api.here.com/v3/3.2/mapsjs-ui.js"></script>
+    <script src="https://js.api.here.com/v3/3.2/mapsjs-mapevents.js"></script>
+    <script type="text/javascript" src="https://js.api.here.com/v3/3.2/mapsjs-clustering.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.2/mapsjs-ui.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Nunito', Arial, sans-serif;
+            background: #f0f0f0;
+        }
+        .page {
+            width: 190mm;
+            height: 277mm;
+            margin: 10mm auto;
+            background: white;
+            border: 1px solid #ccc;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Page 1: Form */
+        .page-form {
+            padding: 40mm 0;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .form-group {
+            margin-bottom: 50mm;
+            text-align: center;
+            width: 100%;
+        }
+        .print-button {
+            padding: 4mm 8mm;
+            font-size: 16pt;
+            font-weight: 700;
+            font-family: 'Nunito', Arial, sans-serif;
+            background: #0066CC;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 10mm;
+        }
+        .print-button:hover {
+            background: #0052A3;
+        }
+        .form-label {
+            font-size: 32pt;
+            font-weight: 900;
+            color: #333;
+            text-shadow: 2px 2px 0 #ccc;
+            display: block;
+            margin-bottom: 15mm;
+        }
+        .form-input {
+            width: 150mm;
+            border: none;
+            border-bottom: 3px solid #333;
+            font-size: 24pt;
+            font-family: 'Nunito', Arial, sans-serif;
+            text-align: center;
+            outline: none;
+            padding: 5mm 0;
+            display: block;
+            margin: 0 auto;
+        }
+        .form-input-address {
+            width: 150mm;
+            min-height: 20mm;
+            border: none;
+            border-bottom: 3px solid #333;
+            font-size: 18pt;
+            font-family: 'Nunito', Arial, sans-serif;
+            text-align: center;
+            outline: none;
+            padding: 3mm 5mm;
+            display: block;
+            margin: 0 auto;
+            resize: none;
+            overflow: hidden;
+            line-height: 1.4;
+        }
+        .autocomplete-wrapper {
+            position: relative;
+            display: block;
+            width: 150mm;
+            margin: 0 auto;
+        }
+        .autocomplete-list {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 140mm;
+            max-height: 60mm;
+            overflow-y: auto;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            z-index: 100;
+            display: none;
+        }
+        .autocomplete-list.show {
+            display: block;
+        }
+        .autocomplete-item {
+            padding: 3mm 5mm;
+            font-size: 14pt;
+            cursor: pointer;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+        .autocomplete-item:hover {
+            background: #f0f7ff;
+        }
+
+        /* Page 2: Title */
+        .page-title {
+            justify-content: flex-start;
+            align-items: center;
+            padding-top: 30mm;
+        }
+        .title-main {
+            font-size: 48pt;
+            font-weight: 900;
+            color: #333;
+            text-shadow: 3px 3px 0 #bbb;
+            text-align: center;
+        }
+        .title-of {
+            font-size: 36pt;
+            font-weight: 700;
+            color: #333;
+            text-shadow: 2px 2px 0 #ccc;
+            margin: 20mm 0;
+            text-align: center;
+        }
+        .title-name {
+            font-size: 54pt;
+            font-weight: 900;
+            color: #3db4b4;
+            text-shadow: 3px 3px 0 #2a8a8a;
+            text-align: center;
+        }
+        .title-footer {
+            position: absolute;
+            bottom: 20mm;
+            right: 25mm;
+            font-size: 24pt;
+            font-weight: 700;
+        }
+        .title-footer .for {
+            color: #333;
+        }
+        .title-footer .k {
+            color: #8bc34a;
+        }
+        .title-footer .i {
+            color: #ff9800;
+        }
+        .title-footer .d {
+            color: #e91e63;
+        }
+        .title-footer .s {
+            color: #9c27b0;
+        }
+        .title-here-logo {
+            position: absolute;
+            left: 25mm;
+            bottom: 20mm;
+        }
+
+        /* Page 3: Map */
+        .page-map {
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .map-header {
+            padding: 8mm 10mm;
+            text-align: center;
+            background: white;
+        }
+        .map-header-line1 {
+            font-size: 18pt;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 3mm;
+        }
+        .map-header-line2 {
+            font-size: 16pt;
+            font-weight: 700;
+            color: #333;
+        }
+        .map-header-city {
+            color: #e91e63;
+        }
+        .map-header-address {
+            color: #e91e63;
+        }
+        #map, #countryMap, #continentMap {
+            width: 100%;
+            flex: 1;
+        }
+
+        @media screen {
+            .page-title,
+            .page-map {
+                position: absolute;
+                left: -9999px;
+                top: 0;
+            }
+        }
+
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 10mm;
+            }
+            body {
+                background: white;
+            }
+            .page.page-form {
+                display: none !important;
+            }
+            .page-title,
+            .page-map {
+                position: static !important;
+                left: auto !important;
+            }
+            .page {
+                margin: 0;
+                border: none;
+                page-break-after: always;
+                break-after: page;
+                display: flex !important;
+            }
+            .page:last-child {
+                page-break-after: avoid;
+            }
+            #map, #countryMap, #continentMap {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Page 1: Form -->
+    <div class="page page-form">
+        <div class="form-group">
+            <label class="form-label">Address:</label>
+            <div class="autocomplete-wrapper">
+                <textarea class="form-input-address" id="addressInput" rows="2" placeholder="" autocomplete="off"></textarea>
+                <div class="autocomplete-list" id="autocompleteList"></div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Name:</label>
+            <input type="text" class="form-input" id="nameInput" placeholder="">
+        </div>
+        <button class="print-button" onclick="window.print()">Print</button>
+    </div>
+
+    <!-- Page 2: Title -->
+    <div class="page page-title">
+        <div class="title-main">First Atlas</div>
+        <div class="title-of">of</div>
+        <div class="title-name" id="titleName"></div>
+        <div class="title-here-logo">
+            <svg width="142" height="142" viewBox="0 0 142 142" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M53 99.5437L42.066 110.478L31.0847 99.5437H53Z" fill="#00A69A"/>
+                <path d="M68.9887 74.599C66.7167 71.901 66.8113 70.4337 68.2313 69.0137C69.9353 67.3097 71.6867 68.0197 73.6747 69.913L68.9887 74.599ZM92.4187 44.8263C94.1227 43.1223 95.874 43.8323 97.862 45.7257L93.176 50.4117C90.904 47.7137 90.9987 46.2463 92.4187 44.8263ZM106.571 49.607C104.441 52.7783 100.749 57.9377 96.868 54.0563L106.713 44.211C105.814 43.2643 105.151 42.4597 104.631 41.9863C99.3293 36.685 93.3653 36.5903 88.6793 41.2763C85.5553 44.4003 84.7507 47.9503 85.65 51.3583L82.5733 47.8557C81.674 48.329 77.8873 51.6897 80.7273 56.707L77.2247 53.7723L72.5387 58.4583L78.834 64.7537C73.9587 60.8723 68.7047 61.251 64.492 65.4637C59.9953 69.9603 60.2793 75.451 63.6873 79.9477L63.0247 79.285C58.5753 74.8357 53.7 76.3977 51.286 78.8117C49.44 80.6577 48.304 83.2137 48.7773 85.0123L39.074 75.309L33.9147 80.4683L52.99 99.5437H63.214L56.3507 92.6803C52.7533 88.9883 52.6587 87.0477 54.41 85.2963C56.114 83.5923 58.0547 84.681 61.5573 88.1363L68.3733 94.9523L73.4853 89.8403L67.048 83.403C71.6867 86.9057 77.272 87.095 82.242 82.1723C82.2893 82.125 82.2893 82.125 82.3367 82.0777C85.366 79.285 86.2653 76.5397 86.2653 76.5397L82.384 73.9363C80.254 77.1077 76.562 82.267 72.6807 78.3857L82.526 68.5403L88.6793 74.6937L94.028 69.345L86.36 61.4877C82.7627 57.8903 84.8927 54.5297 86.4073 53.2517C87.1173 54.719 88.1113 56.139 89.4367 57.4643C94.4067 62.4343 100.844 63.4283 106.477 57.843C106.524 57.7957 106.524 57.7957 106.571 57.7483C109.601 54.9557 110.5 52.2103 110.5 52.2103L106.571 49.607Z" fill="#153947"/>
+            </svg>
+        </div>
+        <div class="title-footer">
+            <span class="for">for </span><span class="k">k</span><span class="i">i</span><span class="d">d</span><span class="s">s</span>
+        </div>
+    </div>
+
+    <!-- Page 3: Continent Map -->
+    <div class="page page-map">
+        <div class="map-header">
+            <div class="map-header-line1">We also live on a continent called <span class="map-header-city" id="continentMapHeaderContinent"></span></div>
+        </div>
+        <div id="continentMap"></div>
+    </div>
+
+    <!-- Page 4: Country Map -->
+    <div class="page page-map">
+        <div class="map-header">
+            <div class="map-header-line1">We live in a country called <span class="map-header-city" id="countryMapHeaderCountry"></span></div>
+        </div>
+        <div id="countryMap"></div>
+    </div>
+
+    <!-- Page 5: City Map -->
+    <div class="page page-map">
+        <div class="map-header">
+            <div class="map-header-line1">The place we live in is called <span class="map-header-city" id="mapHeaderCity"></span></div>
+            <div class="map-header-line2">Here is our home address <span class="map-header-address" id="mapHeaderAddress"></span></div>
+        </div>
+        <div id="map"></div>
+    </div>
+
+    <script>
+        // HERE API key
+        const apiKey = 'jFKqNUf-yp9ntKrlFfHThx0vAq__yTDIHvlSA9CV6TI';
+
+        // Continent bounding boxes
+        const continentBBoxes = {
+            "Europe": { south: 32.0, west: -12.0, north: 72.0, east: 49.0 },
+            "Asia": { south: -10.0, west: 25.0, north: 81.0, east: 180.0 },
+            "Africa": { south: -40.0, west: -18.0, north: 40.0, east: 54.0 },
+            "North America": { south: 5.0, west: -170.0, north: 84.0, east: -10.0 },
+            "South America": { south: -56.0, west: -96.0, north: 24.0, east: -30.0 },
+            "Antarctica": { south: -90.0, west: -180.0, north: -60.0, east: 180.0 },
+            "Australia": { south: -50.0, west: 110.0, north: 0.0, east: 180.0 }
+        };
+
+        const noPoisStyleDef = {
+            "editorVersion": "1.9.0",
+            "schemeVersion": "1.9.0",
+            "base": { "style": "oslo", "scheme": "normal.day" },
+            "definitions": {
+                "POI.TransitStop.Icon.Size": 0,
+                "POI.TransitAccess.Icon.Size": 0,
+                "POI.MountainPeak.Icon.Size": 0,
+                "POI.MountainPeak.Label.Size": [
+                    "interpolate",
+                    ["linear"],
+                    ["zoom"],
+                    5,
+                    0,
+                    8,
+                    0,
+                    12,
+                    0,
+                    13,
+                    0,
+                    15,
+                    0,
+                    16,
+                    0,
+                    20,
+                    0,
+                    24,
+                    0
+                ],
+                "POI.Icon.Size": 0,
+                "POI.Label.Size": [
+                    "interpolate",
+                    ["linear"],
+                    ["zoom"],
+                    5,
+                    0,
+                    5,
+                    0,
+                    8,
+                    0,
+                    12,
+                    0,
+                    13,
+                    0,
+                    15,
+                    0,
+                    16,
+                    0,
+                    20,
+                    0,
+                    24,
+                    0
+                ],
+                "POI.TransitStop.Label.Size": [
+                    "interpolate",
+                    ["linear"],
+                    ["zoom"],
+                    5,
+                    0,
+                    5,
+                    0,
+                    8,
+                    0,
+                    12,
+                    0,
+                    13,
+                    0,
+                    15,
+                    0,
+                    16,
+                    0,
+                    20,
+                    0,
+                    24,
+                    0
+                ]
+            }
+        };
+        // Update title name when input changes
+        const nameInput = document.getElementById('nameInput');
+        const titleName = document.getElementById('titleName');
+
+        nameInput.addEventListener('input', function() {
+            const name = this.value;
+            titleName.textContent = name;
+            // Update document title
+            document.title = name ? `First Atlas for Kids - ${name}` : 'First Atlas for Kids';
+        });
+
+        // Set focus on address input on page load
+        window.addEventListener('load', function() {
+            addressInput.focus();
+        });
+
+        // Address autocomplete
+        const addressInput = document.getElementById('addressInput');
+        const autocompleteList = document.getElementById('autocompleteList');
+        let debounceTimer;
+
+        addressInput.addEventListener('input', function() {
+            const query = this.value.trim();
+
+            clearTimeout(debounceTimer);
+
+            if (query.length < 3) {
+                autocompleteList.classList.remove('show');
+                return;
+            }
+
+            debounceTimer = setTimeout(() => {
+                fetchAutocomplete(query);
+            }, 300);
+        });
+
+        async function fetchAutocomplete(query) {
+            const url = `https://autocomplete.search.hereapi.com/v1/autocomplete?q=${encodeURIComponent(query)}&apiKey=${apiKey}`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.items && data.items.length > 0) {
+                    showAutocomplete(data.items);
+                } else {
+                    autocompleteList.classList.remove('show');
+                }
+            } catch (error) {
+                console.error('Autocomplete error:', error);
+                autocompleteList.classList.remove('show');
+            }
+        }
+
+        function showAutocomplete(items) {
+            autocompleteList.innerHTML = '';
+
+            items.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'autocomplete-item';
+                div.textContent = item.title;
+                div.addEventListener('click', () => {
+                    addressInput.value = item.title;
+                    autocompleteList.classList.remove('show');
+                    // Geocode the selected address
+                    if (item.address) {
+                        geocodeAddress(item.address);
+                    }
+                });
+                autocompleteList.appendChild(div);
+            });
+
+            autocompleteList.classList.add('show');
+        }
+
+        // Geocode address to get coordinates
+        async function geocodeAddress(address) {
+            const params = [];
+
+            if (address.countryCode) params.push(`country=${encodeURIComponent(address.countryCode)}`);
+            if (address.state) params.push(`state=${encodeURIComponent(address.state)}`);
+            if (address.city) params.push(`city=${encodeURIComponent(address.city)}`);
+            if (address.postalCode) params.push(`postalCode=${encodeURIComponent(address.postalCode)}`);
+            if (address.street) params.push(`street=${encodeURIComponent(address.street)}`);
+            if (address.houseNumber) params.push(`houseNumber=${encodeURIComponent(address.houseNumber)}`);
+
+            const qq = params.join(';');
+
+            // Geocode full address
+            const geocodeUrl = `https://geocode.search.hereapi.com/v1/geocode?qq=${qq}&apiKey=${apiKey}&show=tz`;
+
+            try {
+                const response = await fetch(geocodeUrl);
+                const data = await response.json();
+
+                if (data.items && data.items.length > 0) {
+                    const item = data.items[0];
+                    const position = item.position;
+                    const geocodedAddress = item.address;
+                    const timeZone = item.timeZone;
+                    console.log('Geocoded position:', position);
+                    console.log('Timezone:', timeZone);
+
+                    // Update city map header
+                    const city = geocodedAddress.city || geocodedAddress.county || '';
+                    const street = geocodedAddress.street || '';
+                    const houseNumber = geocodedAddress.houseNumber || '';
+                    const streetAddress = houseNumber ? `${street} ${houseNumber}` : street;
+
+                    document.getElementById('mapHeaderCity').textContent = city;
+                    document.getElementById('mapHeaderAddress').textContent = streetAddress;
+
+                    // Center city map on the address
+                    map.setCenter({lat: position.lat, lng: position.lng});
+                    map.setZoom(17);
+
+                    // Add marker to city map
+                    group.removeAll();
+                    const marker = new H.map.Marker({lat: position.lat, lng: position.lng});
+                    group.addObject(marker);
+
+                    // Get continent from timezone
+                    const continent = timeZone && timeZone.name ? timeZone.name.split('/')[0] : '';
+                    if (continent) {
+                        setContinentMap(continent);
+                    }
+
+                    // Geocode country for country map
+                    if (address.countryCode) {
+                        geocodeCountry(address.countryCode, geocodedAddress.countryName);
+                    }
+                }
+            } catch (error) {
+                console.error('Geocode error:', error);
+            }
+        }
+
+        // Set continent map based on timezone continent
+        function setContinentMap(timezoneContinent) {
+            // Map timezone continent names to our continent names
+            const continentMapping = {
+                "Europe": "Europe",
+                "Asia": "Asia",
+                "Africa": "Africa",
+                "America": "North America", // Default to North America, can be refined
+                "Atlantic": "Europe", // Typically Europe
+                "Pacific": "Australia",
+                "Indian": "Asia",
+                "Antarctica": "Antarctica",
+                "Australia": "Australia"
+            };
+
+            const continentName = continentMapping[timezoneContinent] || timezoneContinent;
+            const bbox = continentBBoxes[continentName];
+
+            if (bbox) {
+                document.getElementById('continentMapHeaderContinent').textContent = continentName;
+
+                const rect = new H.geo.Rect(
+                    bbox.north,
+                    bbox.west,
+                    bbox.south,
+                    bbox.east
+                );
+                continentMap.getViewModel().setLookAtData({bounds: rect});
+            }
+        }
+
+        // Geocode country to get bounding box
+        async function geocodeCountry(countryCode, countryName) {
+            const geocodeUrl = `https://geocode.search.hereapi.com/v1/geocode?qq=country=${encodeURIComponent(countryCode)}&apiKey=${apiKey}`;
+
+            try {
+                const response = await fetch(geocodeUrl);
+                const data = await response.json();
+
+                if (data.items && data.items.length > 0) {
+                    const item = data.items[0];
+                    const mapView = item.mapView;
+                    console.log('Country mapView:', mapView);
+
+                    // Update country map header
+                    document.getElementById('countryMapHeaderCountry').textContent = countryName || countryCode;
+
+                    // Set country map to bounding box
+                    if (mapView) {
+                        const bbox = new H.geo.Rect(
+                            mapView.north,
+                            mapView.west,
+                            mapView.south,
+                            mapView.east
+                        );
+                        countryMap.getViewModel().setLookAtData({bounds: bbox});
+                    }
+                }
+            } catch (error) {
+                console.error('Country geocode error:', error);
+            }
+        }
+
+        // Hide autocomplete on click outside
+        document.addEventListener('click', function(e) {
+            if (!addressInput.contains(e.target) && !autocompleteList.contains(e.target)) {
+                autocompleteList.classList.remove('show');
+            }
+        });
+
+        // HERE Maps initialization
+        const platform = new H.service.Platform({
+            'apikey': apiKey
+        });
+
+        const defaultLayers = platform.createDefaultLayers();
+        //set No Pois for normal vector map
+        const style = new H.map.render.harp.Style(noPoisStyleDef);
+        const vectorTileService = platform.getOMVService();
+        const vectorTileProvider = new H.service.omv.Provider(vectorTileService, style);
+        const vectorTileLayer = new H.map.layer.TileLayer(vectorTileProvider);
+        defaultLayers.vector.normal.map = vectorTileLayer;
+
+        // Continent map (Page 3)
+        const continentMap = new H.Map(
+            document.getElementById('continentMap'),
+            defaultLayers.vector.normal.map,
+            {
+                zoom: 3,
+                pixelRatio: window.devicePixelRatio || 1
+            }
+        );
+        const continentGroup = new H.map.Group();
+        continentMap.addObject(continentGroup);
+        const continentBehavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(continentMap));
+
+        // Country map (Page 4)
+        const countryMap = new H.Map(
+            document.getElementById('countryMap'),
+            defaultLayers.vector.normal.map,
+            {
+                zoom: 3,
+                pixelRatio: window.devicePixelRatio || 1
+            }
+        );
+        const countryGroup = new H.map.Group();
+        countryMap.addObject(countryGroup);
+        const countryBehavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(countryMap));
+
+        // City map (Page 5)
+        const map = new H.Map(
+            document.getElementById('map'),
+            defaultLayers.vector.normal.map,
+            {
+                zoom: 3,
+                pixelRatio: window.devicePixelRatio || 1
+            }
+        );
+
+        const group = new H.map.Group();
+        map.addObject(group);
+
+        window.addEventListener('resize', () => {
+            map.getViewPort().resize();
+            countryMap.getViewPort().resize();
+            continentMap.getViewPort().resize();
+        });
+
+        const behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
+    </script>
+</body>
+</html>
