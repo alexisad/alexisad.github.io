@@ -332,6 +332,10 @@
     <script>
         // HERE API key
         const apiKey = 'jFKqNUf-yp9ntKrlFfHThx0vAq__yTDIHvlSA9CV6TI';
+        const api_key_fta = 'zbg3dTrA4JiNKMvZS-_GYdBgMHayKZgrV65xVeRvESE';
+
+        const mapAttrIndexEndpoint = "https://smap.hereapi.com/v8/maps/index?";
+        const mapAttrEndpoint = "https://smap.hereapi.com/v8/maps/attributes?";
 
         // Continent bounding boxes
         const continentBBoxes = {
@@ -422,6 +426,22 @@
                 ]
             }
         };
+
+        let remainingLayersToLoad = new Array(); // if we have more than 64 tile IDs in this list then we must do multiple MapAttributes calls
+        let remainingTilesToLoad  = new Array(); // if we have more than 64 tile IDs in this list then we must do multiple MapAttributes calls
+
+        var polygonLines = {};
+        var polygonLinesInn = {};
+
+		mapAdm2Color = {
+			"0": "red",
+			"1": "green",
+			"2": "blue",
+			"8": "black",
+			"9": "aqua",
+		};
+
+
         // Update title name when input changes
         const nameInput = document.getElementById('nameInput');
         const titleName = document.getElementById('titleName');
@@ -486,6 +506,8 @@
                 div.addEventListener('click', () => {
                     addressInput.value = item.title;
                     autocompleteList.classList.remove('show');
+                    // Clear previous polygons from continent map
+                    continentGroup.removeAll();
                     // Geocode the selected address
                     if (item.address) {
                         geocodeAddress(item.address);
@@ -511,7 +533,7 @@
             const qq = params.join(';');
 
             // Geocode full address
-            const geocodeUrl = `https://geocode.search.hereapi.com/v1/geocode?qq=${qq}&apiKey=${apiKey}&show=tz`;
+            const geocodeUrl = `https://geocode.search.hereapi.com/v1/geocode?qq=${qq}&apiKey=${apiKey}&show=tz&showMapReferences=adminIds`;
 
             try {
                 const response = await fetch(geocodeUrl);
@@ -522,8 +544,49 @@
                     const position = item.position;
                     const geocodedAddress = item.address;
                     const timeZone = item.timeZone;
+                    const mapReferences = item.mapReferences;
                     console.log('Geocoded position:', position);
                     console.log('Timezone:', timeZone);
+                    console.log('Map References:', mapReferences);
+
+                    // Extract admin IDs from mapReferences
+                    if (mapReferences) {
+                        const adminIds = [];
+
+                        // Extract ID from hmcId (format: "here:cm:namedplace:21000001")
+                        const extractId = (hmcId) => {
+                            if (hmcId) {
+                                const parts = hmcId.split(':');
+                                return parts[parts.length - 1];
+                            }
+                            return null;
+                        };
+
+                        // Collect IDs from different admin levels
+                        if (mapReferences.country && mapReferences.country.hmcId) {
+                            const id = extractId(mapReferences.country.hmcId);
+                            if (id) adminIds.push(id);
+                        }
+                        /*if (mapReferences.state && mapReferences.state.hmcId) {
+                            const id = extractId(mapReferences.state.hmcId);
+                            if (id) adminIds.push(id);
+                        }
+                        if (mapReferences.county && mapReferences.county.hmcId) {
+                            const id = extractId(mapReferences.county.hmcId);
+                            if (id) adminIds.push(id);
+                        }
+                        if (mapReferences.city && mapReferences.city.hmcId) {
+                            const id = extractId(mapReferences.city.hmcId);
+                            if (id) adminIds.push(id);
+                        }*/
+
+                        console.log('Extracted admin IDs:', adminIds);
+
+                        // Call getTileIdsByAdmId if we have IDs
+                        if (adminIds.length > 0) {
+                            getTileIdsByAdmId(adminIds);
+                        }
+                    }
 
                     // Update city map header
                     const city = geocodedAddress.city || geocodedAddress.county || '';
@@ -597,7 +660,7 @@
 
         // Geocode country to get bounding box
         async function geocodeCountry(countryCode, countryName) {
-            const geocodeUrl = `https://geocode.search.hereapi.com/v1/geocode?qq=country=${encodeURIComponent(countryCode)}&apiKey=${apiKey}`;
+            const geocodeUrl = `https://geocode.search.hereapi.com/v1/geocode?qq=country=${encodeURIComponent(countryCode)}&apiKey=${apiKey}&showMapReferences=adminIds`;
 
             try {
                 const response = await fetch(geocodeUrl);
@@ -629,7 +692,7 @@
 
         // Geocode city to get bounding box
         async function geocodeCity(countryCode, cityName) {
-            const geocodeUrl = `https://geocode.search.hereapi.com/v1/geocode?qq=country=${encodeURIComponent(countryCode)};city=${encodeURIComponent(cityName)}&apiKey=${apiKey}`;
+            const geocodeUrl = `https://geocode.search.hereapi.com/v1/geocode?qq=country=${encodeURIComponent(countryCode)};city=${encodeURIComponent(cityName)}&apiKey=${apiKey}&showMapReferences=adminIds`;
 
             try {
                 const response = await fetch(geocodeUrl);
@@ -739,6 +802,498 @@
         });
 
         const behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
+
+
+
+        function getTileIdsByAdmId(admIds) {
+            polygonLines = {};
+            polygonLinesInn = {};
+
+            function onResponce() {
+                let tiles = JSON.parse(this.responseText);
+                //console.log("getTileIdsByAdmId tiles:", tiles);
+                /*let admTileIds = {
+                    tileIds:
+                    admins.geometries.map(x => x.attributes.ADMIN_PLACE_ID)
+                };*/
+                let lrsTls = tiles.Layers.reduce(
+                    (prevV, currV) => {
+                        let arrTs = prevV.tileIds.concat(currV.tileIDs);
+                        let layers = Array(currV.tileIDs.length);
+                        let arrLrStr = currV.layer.split("_");
+                        layers.fill("ADMIN_POLY_" + arrLrStr[arrLrStr.length - 1]);
+                        layers = prevV.layers.concat(layers);
+                        //console.log("arrTs, layers:", arrTs, layers);
+                        return {
+                            tileIds: arrTs,
+                            layers: layers
+                        };
+                    },
+                    {
+                        tileIds: [],
+                        layers: []
+                    }
+                );
+                console.log("admIds:", admIds, lrsTls);
+                remainingLayersToLoad = lrsTls.layers;
+                remainingTilesToLoad  = lrsTls.tileIds;
+                getPolyAdminByTileIds(admIds);
+            }
+            const req = new XMLHttpRequest();
+            req.addEventListener("load", onResponce);
+            req.open("GET", `${mapAttrIndexEndpoint}layer=ADMIN_PLACE_n&attributes=ADMIN_PLACE_ID&values=${admIds.join(",")}&apikey=${api_key_fta}`);
+            req.send();		
+        }
+
+        
+        function getPolyAdminByTileIds(admIds){
+            //console.log("getPolyAdminByTileIds admIds:", admIds);
+            function onResponce() {
+                let admPolys = JSON.parse(this.responseText);
+                //console.log("adm polys:", admPolys);
+                /*if(admIds.length == 1){
+                    admPolys = admPolys.filter(it => it);
+                }*/
+                parse2Polylines(admPolys, admIds);
+                getPolyAdminByTileIds(admIds); // continue to request the remaining tiles
+            }
+            if (remainingLayersToLoad.length == 0) {
+                //console.log("mapAdmins:", mapAdmins);
+                /*let sumRect;
+                //let allGeoms = new H.map.Group();
+                Object.keys(mapAdmins).forEach(function (key) {
+                    let grpBb = mapAdmins[key].provider.getRootGroup().getBoundingBox();
+                    if(!sumRect && grpBb){
+                        sumRect = grpBb.clone();
+                    }
+                    if(grpBb){
+                        H.geo.Rect.merge(sumRect.getTop(), sumRect.getLeft(), sumRect.getBottom(), sumRect.getRight(),
+                            grpBb.getTop(), grpBb.getLeft(), grpBb.getBottom(), grpBb.getRight(), sumRect);
+                    }
+                    //console.log("sumRect:", sumRect);
+                    
+                    
+                });*/
+                //console.log("setLookAtData:", sumRect);
+                //map.getViewModel().setLookAtData({bounds: sumRect}, true);
+                return;
+            };
+            let layersToLoad  = new Array(); for (var i = 0; i < 64 && remainingLayersToLoad.length > 0; i++) layersToLoad .push(remainingLayersToLoad.shift());
+            let tileIdsToLoad = new Array(); for (var i = 0; i < 64 && remainingTilesToLoad .length > 0; i++) tileIdsToLoad.push(remainingTilesToLoad.shift());
+            const layers = encodeURIComponent(layersToLoad.join(","));
+            const inTiles = "tile:" + tileIdsToLoad.join(",");
+            //const filter = admIds.length == 1 ? "&filter=" + encodeURIComponent("ADMIN_PLACE_ID=" + admIds[0]) : ""; <- doesn't work!!! for in=tiles?
+            const filter = "";
+            const req = new XMLHttpRequest();
+            req.addEventListener("load", onResponce);
+            req.open("GET", `${mapAttrEndpoint}layers=${layers}&in=${inTiles}${filter}&apikey=${api_key_fta}`);
+            req.send();		
+
+        }
+
+
+        function parse2Polylines(r, admIds){
+            var adminId2Data = {};
+            var rowLats = [];
+            var rowLngs = [];
+            var rowLatsLngsInn = {"LAT": "", "LON": ""};
+            var adminLevel;
+            for(let i=0,len=r.Tiles.length; i<len; i++){
+                let
+                    tile = r.Tiles[i],
+                    tId = tile.Meta.tileId,
+                    rows = tile.Rows,
+                    arrLrStr = tile.Meta.layerName.split("_");
+                adminLevel = arrLrStr[arrLrStr.length - 1];
+
+                for(let i=0,len=rows.length; i<len; i++){
+                    if(!admIds.includes(rows[i].ADMIN_PLACE_ID)){
+                        continue;
+                    }
+                    let admId = rows[i].ADMIN_PLACE_ID;
+                    adminId2Data[admId] = adminId2Data[admId] || {};
+                    polygonLines[admId] = polygonLines[admId] || [];
+                    rowLats.push(rows[i].LAT);
+                    rowLngs.push(rows[i].LON);
+
+                    let
+                        row = rows[i],
+                        {SOURCE_TYPE, ADMIN_ORDER, ADMIN_PLACE_ID, FEATURE_TYPE, NAME} = row
+                        data = {NAME, ADMIN_ORDER, ADMIN_PLACE_ID, FEATURE_TYPE, SOURCE_TYPE},
+                        sLat = row.LAT.split(","),
+                        sLng = row.LON.split(","),
+                        sLatInn = row.INNER_LAT ? row.INNER_LAT.split(",") : [],
+                        sLngInn = row.INNER_LON ? row.INNER_LON.split(",") : [],
+                        lats = sLat.map(x => (x == "" ? 0 : parseInt(x))),
+                        lngs = sLng.map(x => (x == "" ? 0 : parseInt(x))),
+                        latsInn = sLatInn.map(x => (x == "" ? 0 : parseInt(x))),
+                        lngsInn = sLngInn.map(x => (x == "" ? 0 : parseInt(x))),
+                        prevLat = 0, prevLng = 0,
+                        prevLatInn = 0, prevLngInn = 0,
+                        polygonStrip = new H.geo.LineString(),
+                        polygonStripInn = new H.geo.LineString(),
+                        coords = new Array(),
+                        coordsInn = new Array(),
+                        alllines = new Array(),
+                        alllinesInn = new Array();
+                    adminId2Data[admId].borderColor = mapAdm2Color[adminLevel];
+                    adminId2Data[admId].data = data;
+                    for(let i=0,len=lats.length; i<len; i++){
+                        lats[i] = prevLat + lats[i];
+                        lngs[i] = prevLng + lngs[i];
+                        prevLat = lats[i], prevLng = lngs[i];
+                        lats[i] = lats[i] / 100000;
+                        lngs[i] = lngs[i] / 100000;
+                        polygonStrip.pushPoint(new H.geo.Point(lats[i], lngs[i]));
+                    }
+                    for(let i=0,len=latsInn.length; i<len; i++){
+                        latsInn[i] = prevLatInn + latsInn[i];
+                        lngsInn[i] = prevLngInn + lngsInn[i];
+                        prevLatInn = latsInn[i], prevLngInn = lngsInn[i];
+                        latsInn[i] = latsInn[i] / 100000;
+                        lngsInn[i] = lngsInn[i] / 100000;
+                        polygonStripInn.pushPoint(new H.geo.Point(latsInn[i], lngsInn[i]));
+                    }
+                    let lineString = new H.geo.LineString();
+                    for(let i=0,len=lats.length; i<len; i++){
+                        let g = sLng[i].toString();
+                        if(g.charAt(0) === '-')
+                            g = g.substr(1);
+                        if(g.indexOf("0") === 0 && sLng[i] != 0 || g == "00") { // next line is artifical
+                            if(i == 0) { // start of array
+                                continue;
+                            }
+                            lineString.pushPoint({lat: lats[i], lng: lngs[i]});
+                            coords.push(new H.geo.Point(lats[i], lngs[i]));
+                            alllines.push(coords);
+                            lineString = new H.geo.LineString();
+                            coords = new Array();
+                            continue;
+                        }
+                        lineString.pushPoint({lat: lats[i], lng: lngs[i]});
+                        coords.push(new H.geo.Point(lats[i], lngs[i]));
+                    }
+                    let lineStringInn = new H.geo.LineString();
+                    for(let i=0,len=latsInn.length; i<len; i++){
+                        let g = sLngInn[i].toString();
+                        if(g.charAt(0) === '-')
+                            g = g.substr(1);
+                        if(g.indexOf("0") === 0 && sLngInn[i] != 0 || g == "00") { // next line is artifical
+                            if(i == 0) { // start of array
+                                continue;
+                            }
+                            lineStringInn.pushPoint({lat: latsInn[i], lng: lngsInn[i]});
+                            coordsInn.push(new H.geo.Point(latsInn[i], lngsInn[i]));
+                            alllinesInn.push(coordsInn);
+                            lineStringInn = new H.geo.LineString();
+                            coordsInn = new Array();
+                            continue;
+                        }
+                        lineStringInn.pushPoint({lat: latsInn[i], lng: lngsInn[i]});
+                        coordsInn.push(new H.geo.Point(latsInn[i], lngsInn[i]));
+                    }
+                    alllines.push(coords);
+                    alllinesInn.push(coordsInn);
+                    alllines.forEach(crds => {
+                        if (crds && crds.length > 1){
+                            polygonLines[admId].push( crds.map(p => [p.lat, p.lng]) );
+                        }
+                    });
+                    if(alllinesInn[0].length != 0){
+                        polygonLinesInn[admId] = polygonLinesInn[admId] || [];
+                    }
+                    alllinesInn.forEach(crds => {
+                        if (crds && crds.length > 1){
+                            polygonLinesInn[admId].push( crds.map(p => [p.lat, p.lng]) );
+                        }
+                    });
+                }
+            }
+
+            // polylinesDictToHereLineStrings in the module lines2polygons
+            const polygs = polylinesDictToHereLineStrings(polygonLines, {decimals: 5, allowUnclosed: false});
+            const polygsInn = polylinesDictToHereLineStrings(polygonLinesInn, {decimals: 5, allowUnclosed: false});
+            for (const [admId, v] of Object.entries(polygs)) {
+                v.forEach((it, idx) => {
+                    let seqPointsPoly = [];
+                    let ls = new H.geo.LineString();
+                    it.forEach(pl => {
+                        ls.pushLatLngAlt(pl[0], pl[1]);
+                        seqPointsPoly.push({y: pl[0], x: pl[1]});
+                    });
+                    let arrLinesInn = [];
+                    for (const [kInn, vInn] of Object.entries(polygsInn)) {
+                        vInn.forEach((itInn, idx) => {
+                            let p = {y: itInn[0][0], x: itInn[0][1]};
+                            // isPointInPolygon in the module pointInPolygon
+                            if(isPointInPolygon(p, seqPointsPoly)){
+                                let lsInn = new H.geo.LineString();
+                                itInn.forEach(pl => {
+                                    lsInn.pushLatLngAlt(pl[0], pl[1]);
+                                });
+                                arrLinesInn.push(lsInn);
+                            }
+                        });
+                    }
+                    var randomColor = 0;
+                    for (var cc = 0; cc < admId.length; cc++)
+                        randomColor += admId.charCodeAt(cc) * 137 + 19;
+                    const geoPolyg = new H.geo.Polygon(ls, arrLinesInn);
+                    var polygon = new H.map.Polygon(geoPolyg, {
+                        style: {
+                            fillColor: 'rgba(' + randomColor % 256 + ',' + (randomColor * 7 + 3) % 256 + ',' + (randomColor * 13 + 5) % 256 + ', 0.2)',
+                            lineWidth: 4,
+                            strokeColor: adminId2Data[admId].borderColor
+                        }
+                    });
+                    polygon.setData(adminId2Data[admId].data);
+                    continentGroup.addObject(polygon);
+                });
+                
+            }
+            rowLatsLngsInn.LAT = rowLats;
+            rowLatsLngsInn.LON = rowLngs;
+        }
+
+        //functions for concat polylines to polygon
+        /**
+         * Input:
+         * linesById = {
+         *   1: [[lat,lng],[lat,lng], ...],          // single polyline for id=1
+         *   2: [ [[lat,lng],...], [[lat,lng],...] ],// (optional) multiple polylines for an id
+         *   3: [[lat,lng],[lat,lng], ...],
+         *   ...
+         * }
+         * options: {
+         *   decimals?: number,          // snap precision for matching polyline endpoints (default 5)
+         *                                // Applied ONLY to start/end points, NOT to intermediate points
+         *   allowUnclosed?: boolean     // allow unclosed rings in output (default true)
+         *                                // If false, only naturally closed rings will be returned
+         * }
+         *
+         * Output:
+         * { [polygon_id]: H.geo.LineString[] }  // one closed ring per LineString (no holes)
+         */
+            function polylinesDictToHereLineStrings(linesById, options = {}) {
+            const decimals = options.decimals ?? 5;
+            const allowUnclosed = options.allowUnclosed ?? true;
+            console.log("decimals:", decimals);
+            console.log("allowUnclosed:", allowUnclosed);
+
+            const keyOf = (p) => `${Number(p[0]).toFixed(decimals)},${Number(p[1]).toFixed(decimals)}`;
+
+            // Calculate distance between two points in meters (flat projection, no Earth curvature)
+            const distanceFlat = (p1, p2) => {
+                const lat = (p1[0] + p2[0]) / 2; // average latitude for lng scaling
+                const latDiff = p1[0] - p2[0];
+                const lngDiff = p1[1] - p2[1];
+
+                const metersPerDegreeLat = 111000; // approximately 111 km per degree latitude
+                const metersPerDegreeLng = 111000 * Math.cos(lat * Math.PI / 180);
+
+                const latDist = latDiff * metersPerDegreeLat;
+                const lngDist = lngDiff * metersPerDegreeLng;
+
+                return Math.sqrt(latDist * latDist + lngDist * lngDist);
+            };
+
+            // Build rings from a list of polylines (array of coord arrays)
+            const ringsFromGroup = (coordsList) => {
+                const startMap = new Map(); // pointKey -> polylines starting here
+                const endMap   = new Map(); // pointKey -> polylines ending here
+                const segments = [];        // { a, b, pts: entire polyline, used:false }
+
+                const pushTo = (m, k, v) => { const arr = m.get(k); arr ? arr.push(v) : m.set(k, [v]); };
+
+                // Treat each polyline as a single segment
+                for (const coords of coordsList) {
+                if (coords.length < 2) continue; // skip empty polylines
+                const a = coords[0];                    // first point (decimals applied here)
+                const b = coords[coords.length - 1];    // last point (decimals applied here)
+                const seg = { a, b, pts: coords, used: false };  // store entire polyline
+                segments.push(seg);
+                pushTo(startMap, keyOf(a), seg);
+                pushTo(endMap,   keyOf(b), seg);
+                }
+
+                const takeNext = (endKey) => {
+                const s = startMap.get(endKey);
+                if (s) for (const seg of s) if (!seg.used) return { seg, reverse: false };
+                const e = endMap.get(endKey);
+                if (e) for (const seg of e) if (!seg.used) return { seg, reverse: true };
+                return null;
+                };
+
+                // Find nearest unused segment within maxDistance (in meters)
+                const findNearestUnused = (fromPt, maxDistance) => {
+                let nearest = null;
+                let minDist = maxDistance;
+
+                for (const seg of segments) {
+                    if (seg.used) continue;
+
+                    // Check distance to segment start
+                    const distToStart = distanceFlat(fromPt, seg.a);
+                    if (distToStart < minDist) {
+                    minDist = distToStart;
+                    nearest = { seg, reverse: false, distance: distToStart, connectTo: seg.a };
+                    }
+
+                    // Check distance to segment end
+                    const distToEnd = distanceFlat(fromPt, seg.b);
+                    if (distToEnd < minDist) {
+                    minDist = distToEnd;
+                    nearest = { seg, reverse: true, distance: distToEnd, connectTo: seg.b };
+                    }
+                }
+
+                return nearest;
+                };
+
+                const unused = () => segments.find(s => !s.used);
+                const rings = [];
+
+                while (true) {
+                const first = unused();
+                if (!first) break;
+
+                first.used = true;
+                let ring = [...first.pts];
+                const startKey = keyOf(ring[0]);
+                let endKey = keyOf(ring[ring.length - 1]);
+                let naturallyClosed = false;
+
+                while (true) {
+                    const pick = takeNext(endKey);
+
+                    if (!pick) {
+                    // No exact match found
+                    const currentEnd = ring[ring.length - 1];
+
+                    // First, check if we can close the ring by bridging to its start point
+                    const distanceToStart = distanceFlat(currentEnd, ring[0]);
+                    if (distanceToStart <= 500) {
+                        console.log(`  Bridging gap to close ring: ${distanceToStart.toFixed(2)}m from [${currentEnd[0].toFixed(6)}, ${currentEnd[1].toFixed(6)}] to [${ring[0][0].toFixed(6)}, ${ring[0][1].toFixed(6)}]`);
+                        naturallyClosed = true;
+                        break; // ring closed via gap bridging
+                    }
+
+                    // Otherwise, try to find nearest unused segment within 500m
+                    const nearest = findNearestUnused(currentEnd, 500);
+
+                    if (nearest) {
+                        console.log(`  Bridging gap: ${nearest.distance.toFixed(2)}m from [${currentEnd[0].toFixed(6)}, ${currentEnd[1].toFixed(6)}] to [${nearest.connectTo[0].toFixed(6)}, ${nearest.connectTo[1].toFixed(6)}]`);
+
+                        // Add connecting point
+                        ring.push(nearest.connectTo);
+
+                        // Mark segment as used and add its points
+                        nearest.seg.used = true;
+                        const pts = nearest.reverse ? [...nearest.seg.pts].reverse() : nearest.seg.pts;
+                        ring.push(...pts.slice(1)); // skip first point (it's the connection point)
+
+                        endKey = keyOf(ring[ring.length - 1]);
+                        if (endKey === startKey) {
+                        naturallyClosed = true;
+                        break; // closed
+                        }
+                        continue;
+                    }
+
+                    break;
+                    }
+
+                    pick.seg.used = true;
+                    const pts = pick.reverse ? [...pick.seg.pts].reverse() : pick.seg.pts;
+
+                    // append all points (no deduplication to preserve precision)
+                    ring.push(...pts.slice(1));  // skip first point (it's the connection point)
+
+                    endKey = keyOf(ring[ring.length - 1]);
+                    if (endKey === startKey) {
+                    naturallyClosed = true;
+                    break; // closed
+                    }
+                }
+
+                // ensure closed ring by adding first point at the end
+                ring.push(ring[0]);
+
+                // Add ring to results if it meets criteria
+                if (ring.length >= 4) {
+                    if (allowUnclosed || naturallyClosed) {
+                    rings.push(ring);
+                    } else {
+                    console.log(`  Skipping unclosed ring with ${ring.length} points`);
+                    }
+                }
+                }
+
+                return rings; // array of closed [lat,lng] rings
+            };
+
+            // Convert rings -> H.geo.LineString[]
+            const out = {};
+            for (const id of Object.keys(linesById)) {
+                const val = linesById[id];
+
+                // normalize: allow either a single polyline or an array of polylines
+                const coordsList = Array.isArray(val[0][0])
+                ? val                                   // already array of polylines
+                : [val];                                // single polyline -> wrap
+
+                const rings = ringsFromGroup(coordsList);
+                if (!rings.length) continue;
+
+                out[id] = rings;
+                /*out[id] = rings.map(r => {
+                const ls = new H.geo.LineString();
+                for (const [lat, lng] of r) ls.pushLatLngAlt(lat, lng); // altitude optional
+                return ls;
+                });*/
+            }
+            return out;
+        }
+
+        // ==== example ====
+        /*const lines = {
+        1: [[52.0,13.0],[52.0,14.0],[53.0,14.0],[53.0,13.0],[52.0,13.0]], // already a closed ring (ok)
+        2: [[50.0,8.0],[50.0,9.0],[51.0,9.0],[51.0,8.0],[50.0,8.0]],      // single polyline
+        3: [                                                             // multiple polylines for the same id
+            [[48.0,11.0],[48.0,12.0],[49.0,12.0]],
+            [[49.0,12.0],[49.0,11.0],[48.0,11.0]]
+        ]
+        };
+
+        const res = polylinesDictToHereLineStrings(lines, { decimals: 6 });
+        // теперь res = { "1": [H.geo.LineString], "2": [H.geo.LineString], "3": [H.geo.LineString] }
+
+        // пример добавления на карту:
+        Object.entries(res).forEach(([id, lineStrings]) => {
+        lineStrings.forEach(ls => {
+            const polygon = new H.map.Polygon(ls);
+            polygon.setData({ polygon_id: id });
+            map.addObject(polygon);
+        });
+        });*/
+        //--------------end concat polylines to polygon
+
+        function isPointInPolygon(testPoint, polygPoints) {
+            let result = false;
+            let j = polygPoints.length - 1;
+            for(let i=0, len=j+1; i<len; i++){
+                let p = polygPoints[i];
+                let lP = polygPoints[j];
+                if(p.y < testPoint.y && lP.y >= testPoint.y || lP.y < testPoint.y && p.y >= testPoint.y){
+                    if((p.x + (testPoint.y - p.y) / (lP.y - p.y) * (lP.x - p.x)) < testPoint.x){
+                        result = !result;
+                    }
+                }
+                j = i;
+            }
+            return result;
+        }
+
     </script>
 </body>
 </html>
