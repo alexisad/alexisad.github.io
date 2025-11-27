@@ -434,7 +434,7 @@
         var polygonLinesInn = {};
 
 		mapAdm2Color = {
-			"0": "red",
+			"0": "rgba(0, 255, 255, 0.7)",
 			"1": "green",
 			"2": "blue",
 			"8": "black",
@@ -506,8 +506,10 @@
                 div.addEventListener('click', () => {
                     addressInput.value = item.title;
                     autocompleteList.classList.remove('show');
-                    // Clear previous polygons from continent map
+                    // Clear previous polygons from continent and country maps
+                    console.log('Clearing continent and country groups');
                     continentGroup.removeAll();
+                    countryGroup.removeAll();
                     // Geocode the selected address
                     if (item.address) {
                         geocodeAddress(item.address);
@@ -597,14 +599,21 @@
                     //document.getElementById('mapHeaderCity').textContent = city;
                     document.getElementById('mapHeaderAddress').textContent = streetAddress;
 
-                    // Center city map on the address
+                    // Center street map on the address
                     map.setCenter({lat: position.lat, lng: position.lng});
                     map.setZoom(17);
 
-                    // Add marker to city map
+                    // Add markers to all maps (create separate marker instances)
                     group.removeAll();
-                    const marker = new H.map.Marker({lat: position.lat, lng: position.lng});
-                    group.addObject(marker);
+
+                    const markerStreet = new H.map.Marker({lat: position.lat, lng: position.lng});
+                    group.addObject(markerStreet);
+
+                    const markerCountry = new H.map.Marker({lat: position.lat, lng: position.lng});
+                    countryGroup.addObject(markerCountry);
+
+                    const markerCity = new H.map.Marker({lat: position.lat, lng: position.lng});
+                    cityGroup.addObject(markerCity);
 
                     // Get continent from timezone
                     const continent = timeZone && timeZone.name ? timeZone.name.split('/')[0] : '';
@@ -1039,15 +1048,30 @@
                     for (var cc = 0; cc < admId.length; cc++)
                         randomColor += admId.charCodeAt(cc) * 137 + 19;
                     const geoPolyg = new H.geo.Polygon(ls, arrLinesInn);
-                    var polygon = new H.map.Polygon(geoPolyg, {
-                        style: {
-                            fillColor: 'rgba(' + randomColor % 256 + ',' + (randomColor * 7 + 3) % 256 + ',' + (randomColor * 13 + 5) % 256 + ', 0.2)',
-                            lineWidth: 4,
-                            strokeColor: adminId2Data[admId].borderColor
-                        }
-                    });
-                    polygon.setData(adminId2Data[admId].data);
-                    continentGroup.addObject(polygon);
+
+                    const polygonStyleContinent = {
+                        //fillColor: 'rgba(' + randomColor % 256 + ',' + (randomColor * 7 + 3) % 256 + ',' + (randomColor * 13 + 5) % 256 + ', 0.2)',
+                        fillColor: adminId2Data[admId].borderColor,
+                        lineWidth: 4,
+                        strokeColor: adminId2Data[admId].borderColor
+                    };
+
+                    const polygonStyleCountry = {
+                        fillColor: 'rgba(0, 0, 0, 0)', // completely transparent
+                        lineWidth: 4,
+                        strokeColor: adminId2Data[admId].borderColor
+                    };
+
+                    // Create two separate polygon instances for different maps
+                    var polygonContinent = new H.map.Polygon(geoPolyg, { style: polygonStyleContinent });
+                    polygonContinent.setData(adminId2Data[admId].data);
+
+                    var polygonCountry = new H.map.Polygon(geoPolyg, { style: polygonStyleCountry });
+                    polygonCountry.setData(adminId2Data[admId].data);
+
+                    //console.log('Adding polygon to maps:', admId, adminId2Data[admId]);
+                    continentGroup.addObject(polygonContinent);
+                    countryGroup.addObject(polygonCountry);
                 });
                 
             }
@@ -1173,7 +1197,7 @@
                     // First, check if we can close the ring by bridging to its start point
                     const distanceToStart = distanceFlat(currentEnd, ring[0]);
                     if (distanceToStart <= 500) {
-                        console.log(`  Bridging gap to close ring: ${distanceToStart.toFixed(2)}m from [${currentEnd[0].toFixed(6)}, ${currentEnd[1].toFixed(6)}] to [${ring[0][0].toFixed(6)}, ${ring[0][1].toFixed(6)}]`);
+                        //console.log(`  Bridging gap to close ring: ${distanceToStart.toFixed(2)}m from [${currentEnd[0].toFixed(6)}, ${currentEnd[1].toFixed(6)}] to [${ring[0][0].toFixed(6)}, ${ring[0][1].toFixed(6)}]`);
                         naturallyClosed = true;
                         break; // ring closed via gap bridging
                     }
