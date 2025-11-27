@@ -216,7 +216,7 @@
         .map-header-address {
             color: #e91e63;
         }
-        #map, #countryMap, #continentMap {
+        #map, #cityMap, #countryMap, #continentMap {
             width: 100%;
             flex: 1;
         }
@@ -256,7 +256,7 @@
             .page:last-child {
                 page-break-after: avoid;
             }
-            #map, #countryMap, #continentMap {
+            #map, #cityMap, #countryMap, #continentMap {
                 page-break-inside: avoid;
                 break-inside: avoid;
             }
@@ -299,7 +299,7 @@
     <!-- Page 3: Continent Map -->
     <div class="page page-map">
         <div class="map-header">
-            <div class="map-header-line1">We also live on a continent called <span class="map-header-city" id="continentMapHeaderContinent"></span></div>
+            <div class="map-header-line1">You live at the continent called <span class="map-header-city" id="continentMapHeaderContinent"></span></div>
         </div>
         <div id="continentMap"></div>
     </div>
@@ -307,7 +307,7 @@
     <!-- Page 4: Country Map -->
     <div class="page page-map">
         <div class="map-header">
-            <div class="map-header-line1">We live in a country called <span class="map-header-city" id="countryMapHeaderCountry"></span></div>
+            <div class="map-header-line1">You live at the country called <span class="map-header-city" id="countryMapHeaderCountry"></span></div>
         </div>
         <div id="countryMap"></div>
     </div>
@@ -315,8 +315,16 @@
     <!-- Page 5: City Map -->
     <div class="page page-map">
         <div class="map-header">
-            <div class="map-header-line1">The place we live in is called <span class="map-header-city" id="mapHeaderCity"></span></div>
-            <div class="map-header-line2">Here is our home address <span class="map-header-address" id="mapHeaderAddress"></span></div>
+            <div class="map-header-line1">You live in a city called <span class="map-header-city" id="cityMapHeaderCity"></span></div>
+        </div>
+        <div id="cityMap"></div>
+    </div>
+
+    <!-- Page 6: Street Map -->
+    <div class="page page-map">
+        <div class="map-header">
+            <!--div class="map-header-line1">You live in a city called <span class="map-header-city" id="mapHeaderCity"></span></div-->
+            <div class="map-header-line2">Here is your address <span class="map-header-address" id="mapHeaderAddress"></span></div>
         </div>
         <div id="map"></div>
     </div>
@@ -523,7 +531,7 @@
                     const houseNumber = geocodedAddress.houseNumber || '';
                     const streetAddress = houseNumber ? `${street} ${houseNumber}` : street;
 
-                    document.getElementById('mapHeaderCity').textContent = city;
+                    //document.getElementById('mapHeaderCity').textContent = city;
                     document.getElementById('mapHeaderAddress').textContent = streetAddress;
 
                     // Center city map on the address
@@ -544,6 +552,11 @@
                     // Geocode country for country map
                     if (address.countryCode) {
                         geocodeCountry(address.countryCode, geocodedAddress.countryName);
+                    }
+
+                    // Geocode city for city map
+                    if (address.countryCode && city) {
+                        geocodeCity(address.countryCode, city);
                     }
                 }
             } catch (error) {
@@ -614,6 +627,38 @@
             }
         }
 
+        // Geocode city to get bounding box
+        async function geocodeCity(countryCode, cityName) {
+            const geocodeUrl = `https://geocode.search.hereapi.com/v1/geocode?qq=country=${encodeURIComponent(countryCode)};city=${encodeURIComponent(cityName)}&apiKey=${apiKey}`;
+
+            try {
+                const response = await fetch(geocodeUrl);
+                const data = await response.json();
+
+                if (data.items && data.items.length > 0) {
+                    const item = data.items[0];
+                    const mapView = item.mapView;
+                    console.log('City mapView:', mapView);
+
+                    // Update city map header
+                    document.getElementById('cityMapHeaderCity').textContent = cityName;
+
+                    // Set city map to bounding box
+                    if (mapView) {
+                        const bbox = new H.geo.Rect(
+                            mapView.north,
+                            mapView.west,
+                            mapView.south,
+                            mapView.east
+                        );
+                        cityMap.getViewModel().setLookAtData({bounds: bbox});
+                    }
+                }
+            } catch (error) {
+                console.error('City geocode error:', error);
+            }
+        }
+
         // Hide autocomplete on click outside
         document.addEventListener('click', function(e) {
             if (!addressInput.contains(e.target) && !autocompleteList.contains(e.target)) {
@@ -661,6 +706,19 @@
         const countryBehavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(countryMap));
 
         // City map (Page 5)
+        const cityMap = new H.Map(
+            document.getElementById('cityMap'),
+            defaultLayers.vector.normal.map,
+            {
+                zoom: 3,
+                pixelRatio: window.devicePixelRatio || 1
+            }
+        );
+        const cityGroup = new H.map.Group();
+        cityMap.addObject(cityGroup);
+        const cityBehavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(cityMap));
+
+        // Street map (Page 6)
         const map = new H.Map(
             document.getElementById('map'),
             defaultLayers.vector.normal.map,
@@ -675,6 +733,7 @@
 
         window.addEventListener('resize', () => {
             map.getViewPort().resize();
+            cityMap.getViewPort().resize();
             countryMap.getViewPort().resize();
             continentMap.getViewPort().resize();
         });
