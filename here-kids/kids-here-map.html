@@ -221,6 +221,128 @@
             flex: 1;
         }
 
+        /* Page 7: Exploration Questions */
+        .page-explore {
+            width: 100%;
+            max-width: 900px;
+            height: auto;
+            margin: 20px auto;
+            padding: 40px 60px;
+            box-sizing: border-box;
+        }
+        .explore-title {
+            font-size: 36px;
+            font-weight: 900;
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 0 #ccc;
+        }
+        .explore-subtitle {
+            font-size: 16px;
+            font-weight: 700;
+            color: #555;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+        .explore-section {
+            margin-bottom: 30px;
+        }
+        .explore-section-title {
+            font-size: 24px;
+            font-weight: 900;
+            color: #e91e63;
+            margin-bottom: 12px;
+        }
+        .explore-list {
+            padding-left: 30px;
+            margin: 0;
+        }
+        .explore-list li {
+            font-size: 16px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 8px;
+            padding-left: 8px;
+        }
+
+        /* Page 8: Create Your Own Map */
+        .page-create {
+            width: 100%;
+            max-width: 1800px;
+            height: auto;
+            margin: 20px auto;
+            padding: 40px 60px;
+            box-sizing: border-box;
+        }
+        .create-content {
+            display: flex;
+            gap: 20px;
+        }
+        .icons-section {
+            flex: 0 0 300px;
+        }
+        .map-section {
+            flex: 1;
+            min-height: 700px;
+            border: 2px solid #333;
+            position: relative;
+            background: #f9f9f9;
+        }
+        #interactiveMap {
+            width: 100%;
+            height: 100%;
+        }
+        .create-title {
+            font-size: 36px;
+            font-weight: 900;
+            color: #333;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 0 #ccc;
+        }
+        .create-subtitle {
+            font-size: 16px;
+            font-weight: 700;
+            color: #555;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            font-style: italic;
+        }
+        .icons-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .icon-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .icon-item {
+            width: 45px;
+            height: 45px;
+            font-size: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+        .icon-item:hover {
+            opacity: 0.7;
+        }
+        .icon-item.used {
+            opacity: 0.2;
+            pointer-events: none;
+        }
+        .icon-label {
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+            min-width: 180px;
+        }
+
         @media screen {
             .page-title,
             .page-map {
@@ -238,7 +360,9 @@
             body {
                 background: white;
             }
-            .page.page-form {
+            .page.page-form,
+            .page.page-explore,
+            .page.page-create {
                 display: none !important;
             }
             .page-title,
@@ -329,6 +453,450 @@
         <div id="map"></div>
     </div>
 
+    <!-- Page 7: Exploration Questions (Screen only) -->
+    <div class="page page-explore">
+        <div class="explore-title">Let's Explore Your World Together!</div>
+
+        <div class="explore-subtitle">
+            <strong>How to Use This Page (For You and Your Grown-Up)</strong><br>
+            Look at the questions and explore the maps side by side. Try to find each place by reading the labels, following the streets, and comparing the different zoom levels—from the whole planet down to your street. Take turns asking and answering questions, tracing paths, and discovering new details. This activity is about exploring, talking, and learning together, so take your time and enjoy the adventure.
+        </div>
+
+        <div class="explore-section">
+            <div class="explore-section-title">Planet & Continent Maps</div>
+            <ol class="explore-list">
+                <li>Can you find the place on the planet where you live?</li>
+                <li>Can you find the mountains called the Alps?</li>
+                <li>Can you find Croatia on the map?</li>
+                <li>Can you find the capital of Portugal?</li>
+                <li>What is the capital of your country?</li>
+            </ol>
+        </div>
+
+        <div class="explore-section">
+            <div class="explore-section-title">Country & City Maps</div>
+            <ol class="explore-list" start="6">
+                <li>Where is your city on the country map?</li>
+                <li>Which province or region is it part of?</li>
+                <li>Which cities or towns are nearby?</li>
+            </ol>
+        </div>
+
+        <div class="explore-section">
+            <div class="explore-section-title">Street & Neighborhood Map</div>
+            <ol class="explore-list" start="9">
+                <li>What is the name of your street?</li>
+                <li>What are the street names around the one you live on?</li>
+                <li>Can you find where Granny lives?</li>
+                <li>Where is your school on the map?</li>
+                <li>Can you spot where your family doctor is located?</li>
+                <li>Where does your best friend live?</li>
+                <li>Can you find your favorite playground or park?</li>
+                <li>Where is the shop or supermarket your family visits often?</li>
+                <li>Where do you usually take the bus or train?</li>
+                <li>Can you find a place you go to for fun (sports, music, swimming)?</li>
+                <li>Which street do you walk along every day?</li>
+                <li>Is there a special place you like to visit with your family? Where is it on the map?</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- Page 8: Create Your Own Map (Screen only) -->
+    <div class="page page-create">
+        <div class="create-title">Let's Create Your Own Map!</div>
+
+        <div class="create-subtitle">
+            <strong>How to Use This Page (For You and Your Grown-Up)</strong> Click on the icons to place them on your map. You can mark where family members live, where you go to school, where you play, and the places you visit often. Drag the icons to move them around. As you add each icon, talk about what that place means to you and how you get there.
+        </div>
+
+        <div class="create-content">
+            <div class="icons-section">
+                <div class="icons-grid">
+            <div class="icon-row">
+                <div class="icon-item" id="icon-home-1" data-emoji="🏠">🏠</div>
+                <div class="icon-item" id="icon-home-2" data-emoji="🏠">🏠</div>
+                <div class="icon-item" id="icon-home-3" data-emoji="🏠">🏠</div>
+                <div class="icon-item" id="icon-home-4" data-emoji="🏠">🏠</div>
+                <div class="icon-item" id="icon-home-5" data-emoji="🏠">🏠</div>
+                <div class="icon-label">Home</div>
+            </div>
+
+            <div class="icon-row">
+                <div class="icon-item" id="icon-granny1-1" data-emoji="👵🏻">👵🏻</div>
+                <div class="icon-item" id="icon-grandpa1-1" data-emoji="👴🏻">👴🏻</div>
+                <div class="icon-label">Granny & Grandfather</div>
+            </div>
+
+            <div class="icon-row">
+                <div class="icon-item" id="icon-granny2-1" data-emoji="👵🏼">👵🏼</div>
+                <div class="icon-item" id="icon-grandpa2-1" data-emoji="👴🏼">👴🏼</div>
+                <div class="icon-label">Granny & Grandfather</div>
+            </div>
+
+            <div class="icon-row">
+                <div class="icon-item" id="icon-granny3-1" data-emoji="👵🏽">👵🏽</div>
+                <div class="icon-item" id="icon-grandpa3-1" data-emoji="👴🏽">👴🏽</div>
+                <div class="icon-label">Granny & Grandfather</div>
+            </div>
+
+            <div class="icon-row">
+                <div class="icon-item" id="icon-granny4-1" data-emoji="👵🏾">👵🏾</div>
+                <div class="icon-item" id="icon-grandpa4-1" data-emoji="👴🏾">👴🏾</div>
+                <div class="icon-label">Granny & Grandfather</div>
+            </div>
+
+            <div class="icon-row">
+                <div class="icon-item" id="icon-granny5-1" data-emoji="👵🏿">👵🏿</div>
+                <div class="icon-item" id="icon-grandpa5-1" data-emoji="👴🏿">👴🏿</div>
+                <div class="icon-label">Granny & Grandfather</div>
+            </div>
+
+            <div class="icon-row">
+                <div class="icon-item" id="icon-friend-1" data-emoji="😊">😊</div>
+                <div class="icon-item" id="icon-friend-2" data-emoji="😊">😊</div>
+                <div class="icon-item" id="icon-friend-3" data-emoji="😊">😊</div>
+                <div class="icon-item" id="icon-friend-4" data-emoji="😊">😊</div>
+                <div class="icon-item" id="icon-friend-5" data-emoji="😊">😊</div>
+                <div class="icon-label">Best Friend</div>
+            </div>
+
+            <div class="icon-row">
+                <div class="icon-item" id="icon-doctor-1" data-emoji="⚕️">⚕️</div>
+                <div class="icon-item" id="icon-doctor-2" data-emoji="⚕️">⚕️</div>
+                <div class="icon-item" id="icon-doctor-3" data-emoji="⚕️">⚕️</div>
+                <div class="icon-item" id="icon-doctor-4" data-emoji="⚕️">⚕️</div>
+                <div class="icon-item" id="icon-doctor-5" data-emoji="⚕️">⚕️</div>
+                <div class="icon-label">Family Doctor</div>
+            </div>
+
+            <div class="icon-row">
+                <div class="icon-item" id="icon-school-1" data-emoji="🏫">🏫</div>
+                <div class="icon-item" id="icon-school-2" data-emoji="🏫">🏫</div>
+                <div class="icon-item" id="icon-school-3" data-emoji="🏫">🏫</div>
+                <div class="icon-item" id="icon-school-4" data-emoji="🏫">🏫</div>
+                <div class="icon-item" id="icon-school-5" data-emoji="🏫">🏫</div>
+                <div class="icon-label">School</div>
+            </div>
+
+            <div class="icon-row">
+                <div class="icon-item" id="icon-playground-1" data-emoji="🛝">🛝</div>
+                <div class="icon-item" id="icon-playground-2" data-emoji="🛝">🛝</div>
+                <div class="icon-item" id="icon-playground-3" data-emoji="🛝">🛝</div>
+                <div class="icon-item" id="icon-playground-4" data-emoji="🛝">🛝</div>
+                <div class="icon-item" id="icon-playground-5" data-emoji="🛝">🛝</div>
+                <div class="icon-label">Playground</div>
+            </div>
+
+            <div class="icon-row">
+                <div class="icon-item" id="icon-supermarket-1" data-emoji="🛒">🛒</div>
+                <div class="icon-item" id="icon-supermarket-2" data-emoji="🛒">🛒</div>
+                <div class="icon-item" id="icon-supermarket-3" data-emoji="🛒">🛒</div>
+                <div class="icon-item" id="icon-supermarket-4" data-emoji="🛒">🛒</div>
+                <div class="icon-item" id="icon-supermarket-5" data-emoji="🛒">🛒</div>
+                <div class="icon-label">Supermarket</div>
+            </div>
+
+            <div class="icon-row">
+                <div class="icon-item" id="icon-bus-1" data-emoji="🚌">🚌</div>
+                <div class="icon-item" id="icon-bus-2" data-emoji="🚌">🚌</div>
+                <div class="icon-item" id="icon-bus-3" data-emoji="🚌">🚌</div>
+                <div class="icon-item" id="icon-bus-4" data-emoji="🚌">🚌</div>
+                <div class="icon-item" id="icon-bus-5" data-emoji="🚌">🚌</div>
+                <div class="icon-label">Bus Stop</div>
+            </div>
+
+            <div class="icon-row">
+                <div class="icon-item" id="icon-train-1" data-emoji="🚊">🚊</div>
+                <div class="icon-item" id="icon-train-2" data-emoji="🚊">🚊</div>
+                <div class="icon-item" id="icon-train-3" data-emoji="🚊">🚊</div>
+                <div class="icon-item" id="icon-train-4" data-emoji="🚊">🚊</div>
+                <div class="icon-item" id="icon-train-5" data-emoji="🚊">🚊</div>
+                <div class="icon-label">Train Station</div>
+            </div>
+
+            <div class="icon-row">
+                <div class="icon-item" id="icon-football-1" data-emoji="⚽">⚽</div>
+                <div class="icon-item" id="icon-football-2" data-emoji="⚽">⚽</div>
+                <div class="icon-item" id="icon-football-3" data-emoji="⚽">⚽</div>
+                <div class="icon-item" id="icon-football-4" data-emoji="⚽">⚽</div>
+                <div class="icon-item" id="icon-football-5" data-emoji="⚽">⚽</div>
+                <div class="icon-label">Football</div>
+            </div>
+
+            <div class="icon-row">
+                <div class="icon-item" id="icon-park-1" data-emoji="🌳">🌳</div>
+                <div class="icon-item" id="icon-park-2" data-emoji="🌳">🌳</div>
+                <div class="icon-item" id="icon-park-3" data-emoji="🌳">🌳</div>
+                <div class="icon-item" id="icon-park-4" data-emoji="🌳">🌳</div>
+                <div class="icon-item" id="icon-park-5" data-emoji="🌳">🌳</div>
+                <div class="icon-label">Park</div>
+            </div>
+
+            <div class="icon-row">
+                <div class="icon-item" id="icon-library-1" data-emoji="📚">📚</div>
+                <div class="icon-item" id="icon-library-2" data-emoji="📚">📚</div>
+                <div class="icon-item" id="icon-library-3" data-emoji="📚">📚</div>
+                <div class="icon-item" id="icon-library-4" data-emoji="📚">📚</div>
+                <div class="icon-item" id="icon-library-5" data-emoji="📚">📚</div>
+                <div class="icon-label">Library</div>
+            </div>
+
+            <div class="icon-row">
+                <div class="icon-item" id="icon-music-1" data-emoji="🎵">🎵</div>
+                <div class="icon-item" id="icon-music-2" data-emoji="🎵">🎵</div>
+                <div class="icon-item" id="icon-music-3" data-emoji="🎵">🎵</div>
+                <div class="icon-item" id="icon-music-4" data-emoji="🎵">🎵</div>
+                <div class="icon-item" id="icon-music-5" data-emoji="🎵">🎵</div>
+                <div class="icon-label">Music Lesson</div>
+            </div>
+
+            <div class="icon-row">
+                <div class="icon-item" id="icon-pool-1" data-emoji="🌊">🌊</div>
+                <div class="icon-item" id="icon-pool-2" data-emoji="🌊">🌊</div>
+                <div class="icon-item" id="icon-pool-3" data-emoji="🌊">🌊</div>
+                <div class="icon-item" id="icon-pool-4" data-emoji="🌊">🌊</div>
+                <div class="icon-item" id="icon-pool-5" data-emoji="🌊">🌊</div>
+                <div class="icon-label">Swimming Pool</div>
+            </div>
+
+            <div class="icon-row">
+                <div class="icon-item" id="icon-star-1" data-emoji="⭐">⭐</div>
+                <div class="icon-item" id="icon-star-2" data-emoji="⭐">⭐</div>
+                <div class="icon-item" id="icon-star-3" data-emoji="⭐">⭐</div>
+                <div class="icon-item" id="icon-star-4" data-emoji="⭐">⭐</div>
+                <div class="icon-item" id="icon-star-5" data-emoji="⭐">⭐</div>
+                <div class="icon-label">Special Place</div>
+            </div>
+
+            <div class="icon-row">
+                <div class="icon-item" id="icon-heart-1" data-emoji="❤️">❤️</div>
+                <div class="icon-item" id="icon-heart-2" data-emoji="❤️">❤️</div>
+                <div class="icon-item" id="icon-heart-3" data-emoji="❤️">❤️</div>
+                <div class="icon-item" id="icon-heart-4" data-emoji="❤️">❤️</div>
+                <div class="icon-item" id="icon-heart-5" data-emoji="❤️">❤️</div>
+                <div class="icon-label">Favorite Place</div>
+            </div>
+
+            <div class="icon-row">
+                <div class="icon-item" id="icon-blank-1" data-emoji="⬜">⬜</div>
+                <div class="icon-item" id="icon-blank-2" data-emoji="⬜">⬜</div>
+                <div class="icon-item" id="icon-blank-3" data-emoji="⬜">⬜</div>
+                <div class="icon-item" id="icon-blank-4" data-emoji="⬜">⬜</div>
+                <div class="icon-item" id="icon-blank-5" data-emoji="⬜">⬜</div>
+                <div class="icon-label">Blank Tag</div>
+            </div>
+
+            <div class="icon-row">
+                <div class="icon-item" id="icon-farm-1" data-emoji="🐄">🐄</div>
+                <div class="icon-item" id="icon-farm-2" data-emoji="🐄">🐄</div>
+                <div class="icon-item" id="icon-farm-3" data-emoji="🐄">🐄</div>
+                <div class="icon-item" id="icon-farm-4" data-emoji="🐄">🐄</div>
+                <div class="icon-item" id="icon-farm-5" data-emoji="🐄">🐄</div>
+                <div class="icon-label">Farm</div>
+            </div>
+
+            <div class="icon-row">
+                <div class="icon-item" id="icon-icecream-1" data-emoji="🍦">🍦</div>
+                <div class="icon-item" id="icon-icecream-2" data-emoji="🍦">🍦</div>
+                <div class="icon-item" id="icon-icecream-3" data-emoji="🍦">🍦</div>
+                <div class="icon-item" id="icon-icecream-4" data-emoji="🍦">🍦</div>
+                <div class="icon-item" id="icon-icecream-5" data-emoji="🍦">🍦</div>
+                <div class="icon-label">Ice Cream</div>
+            </div>
+                </div>
+            </div>
+
+            <div class="map-section">
+                <div id="interactiveMap"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize interactive map for icon placement
+        let interactiveMap = null;
+        let interactiveMapGroup = null;
+        let interactiveMapBehavior = null;
+        let lastGeocodedPosition = null;
+
+        // Wait for geocode to complete and initialize interactive map
+        function initInteractiveMap() {
+            if (interactiveMap) return; // Already initialized
+
+            if (!lastGeocodedPosition) {
+                // Use default position if no address geocoded yet
+                lastGeocodedPosition = { lat: 52.5, lng: 13.4 }; // Berlin default
+            }
+
+            const platform = new H.service.Platform({
+                'apikey': apiKey
+            });
+
+            const defaultLayers = platform.createDefaultLayers();
+            const style = new H.map.render.harp.Style(noPoisStyleDef);
+            const vectorTileService = platform.getOMVService();
+            const vectorTileProvider = new H.service.omv.Provider(vectorTileService, style);
+            const vectorTileLayer = new H.map.layer.TileLayer(vectorTileProvider, {
+                min: 2,
+                max: 22
+            });
+
+            interactiveMap = new H.Map(
+                document.getElementById('interactiveMap'),
+                vectorTileLayer,
+                {
+                    zoom: 15,
+                    center: lastGeocodedPosition,
+                    pixelRatio: window.devicePixelRatio || 1
+                }
+            );
+
+            interactiveMapGroup = new H.map.Group();
+            interactiveMap.addObject(interactiveMapGroup);
+
+            // Enable map behavior with kinetic panning and zooming
+            const mapEvents = new H.mapevents.MapEvents(interactiveMap);
+            interactiveMapBehavior = new H.mapevents.Behavior(mapEvents);
+
+            // Add default home marker at the geocoded address position
+            const homeEmoji = '🏠';
+            const homeIconCanvas = createEmojiIcon(homeEmoji);
+            const homeMarkerElement = document.createElement('div');
+            homeMarkerElement.style.cursor = 'pointer';
+            homeMarkerElement.style.width = '50px';
+            homeMarkerElement.style.height = '50px';
+            homeMarkerElement.appendChild(homeIconCanvas);
+
+            const homeDomIcon = new H.map.DomIcon(homeMarkerElement, {
+                anchor: { x: 25, y: 45 }
+            });
+            const homeMarker = new H.map.DomMarker(lastGeocodedPosition, {
+                icon: homeDomIcon,
+                volatility: true
+            });
+
+            homeMarker.draggable = true;
+            homeMarker.setData({ sourceId: 'default-home', isDefault: true });
+
+            // Add drag event listeners
+            homeMarker.addEventListener('dragstart', function(evt) {
+                if (interactiveMapBehavior) {
+                    interactiveMapBehavior.disable();
+                }
+            });
+
+            homeMarker.addEventListener('drag', function(evt) {
+                const pointer = evt.currentPointer;
+                const coords = interactiveMap.screenToGeo(pointer.viewportX, pointer.viewportY);
+                if (coords) {
+                    homeMarker.setGeometry(coords);
+                }
+            });
+
+            homeMarker.addEventListener('dragend', function(evt) {
+                if (interactiveMapBehavior) {
+                    interactiveMapBehavior.enable();
+                }
+            });
+
+            interactiveMapGroup.addObject(homeMarker);
+
+            window.addEventListener('resize', () => {
+                interactiveMap.getViewPort().resize();
+            });
+        }
+
+        // Icon placement functionality using HERE Maps DomMarker
+        function createEmojiIcon(emoji) {
+            // Create a canvas element for the emoji icon
+            const canvas = document.createElement('canvas');
+            canvas.width = 50;
+            canvas.height = 50;
+            const ctx = canvas.getContext('2d');
+
+            // Draw emoji on canvas
+            ctx.font = '36px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(emoji, 25, 25);
+
+            return canvas;
+        }
+
+        document.querySelectorAll('.icon-item').forEach(icon => {
+            icon.addEventListener('click', function() {
+                if (this.classList.contains('used')) return;
+                if (!interactiveMap) {
+                    alert('Please enter an address first');
+                    return;
+                }
+
+                const emoji = this.getAttribute('data-emoji');
+                const iconId = this.id;
+
+                // Create canvas icon
+                const iconCanvas = createEmojiIcon(emoji);
+
+                // Create DOM element for the marker
+                const markerElement = document.createElement('div');
+                markerElement.style.cursor = 'pointer';
+                markerElement.style.width = '50px';
+                markerElement.style.height = '50px';
+                markerElement.appendChild(iconCanvas);
+
+                // Get map center as initial position
+                const center = interactiveMap.getCenter();
+
+                // Create DomIcon from canvas with anchor point
+                const domIcon = new H.map.DomIcon(markerElement, {
+                    anchor: { x: 25, y: 45 }
+                });
+
+                // Create DomMarker with volatility
+                const marker = new H.map.DomMarker(center, {
+                    icon: domIcon,
+                    volatility: true
+                });
+
+                // Make marker draggable
+                marker.draggable = true;
+
+                // Store reference to source icon
+                marker.setData({ sourceId: iconId });
+
+                // Add event listeners for drag
+                marker.addEventListener('dragstart', function(evt) {
+                    // Disable map behavior during marker drag
+                    if (interactiveMapBehavior) {
+                        interactiveMapBehavior.disable();
+                    }
+                });
+
+                marker.addEventListener('drag', function(evt) {
+                    // This event fires continuously while dragging
+                    const pointer = evt.currentPointer;
+                    const coords = interactiveMap.screenToGeo(pointer.viewportX, pointer.viewportY);
+                    if (coords) {
+                        marker.setGeometry(coords);
+                    }
+                });
+
+                marker.addEventListener('dragend', function(evt) {
+                    // Re-enable map behavior after marker drag
+                    if (interactiveMapBehavior) {
+                        interactiveMapBehavior.enable();
+                    }
+                });
+
+                // Add marker to map
+                interactiveMapGroup.addObject(marker);
+
+                // Mark icon as used
+                this.classList.add('used');
+            });
+        });
+
+    </script>
     <script>
         // HERE API key
         const apiKey = 'jFKqNUf-yp9ntKrlFfHThx0vAq__yTDIHvlSA9CV6TI';
@@ -550,6 +1118,12 @@
                     console.log('Geocoded position:', position);
                     console.log('Timezone:', timeZone);
                     console.log('Map References:', mapReferences);
+
+                    // Save position for interactive map
+                    lastGeocodedPosition = { lat: position.lat, lng: position.lng };
+
+                    // Initialize interactive map if it hasn't been created yet
+                    initInteractiveMap();
 
                     // Extract admin IDs from mapReferences
                     if (mapReferences) {
