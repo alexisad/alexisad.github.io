@@ -1416,6 +1416,10 @@
         continentMap.addObject(continentGroup);
         const continentBehavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(continentMap));
 
+        const continentUI = H.ui.UI.createDefault(continentMap, continentDefaultLayers);
+        continentUI.removeControl("mapsettings");
+        continentUI.removeControl("zoom");
+
         // Country map (Page 4)
         const countryPlatform = new H.service.Platform({
             'apikey': apiKey
@@ -1437,6 +1441,10 @@
         const countryGroup = new H.map.Group();
         countryMap.addObject(countryGroup);
         const countryBehavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(countryMap));
+
+        const countryUI = H.ui.UI.createDefault(countryMap, countryDefaultLayers);
+        countryUI.removeControl("mapsettings");
+        countryUI.removeControl("zoom");
 
         // City map (Page 5)
         const cityPlatform = new H.service.Platform({
@@ -1460,6 +1468,10 @@
         cityMap.addObject(cityGroup);
         const cityBehavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(cityMap));
 
+        const cityUI = H.ui.UI.createDefault(cityMap, cityDefaultLayers);
+        cityUI.removeControl("mapsettings");
+        cityUI.removeControl("zoom");
+
         // Street map (Page 6)
         const streetPlatform = new H.service.Platform({
             'apikey': apiKey
@@ -1481,6 +1493,10 @@
 
         const group = new H.map.Group();
         map.addObject(group);
+
+        const streetUI = H.ui.UI.createDefault(map, streetDefaultLayers);
+        streetUI.removeControl("mapsettings");
+        streetUI.removeControl("zoom");
 
         window.addEventListener('resize', () => {
             map.getViewPort().resize();
