@@ -191,8 +191,10 @@
         /* Page 3: Map */
         .page-map {
             padding: 0;
+            padding-left: 10mm;
             display: flex;
             flex-direction: column;
+            position: relative;
         }
         .map-header {
             padding: 6mm 10mm;
@@ -215,6 +217,17 @@
         }
         .map-header-address {
             color: #e91e63;
+        }
+        .map-page-number {
+            position: absolute;
+            bottom: 2mm;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 14pt;
+            font-weight: 700;
+            color: #666;
+            padding: 3mm 0;
         }
         #map, #cityMap, #countryMap, #continentMap {
             width: 100%;
@@ -350,6 +363,9 @@
                 left: -9999px;
                 top: 0;
             }
+            .map-page-number {
+                display: none;
+            }
         }
 
         @media print {
@@ -365,9 +381,12 @@
             .page.page-create {
                 display: none !important;
             }
-            .page-title,
-            .page-map {
+            .page-title {
                 position: static !important;
+                left: auto !important;
+            }
+            .page-map {
+                position: relative !important;
                 left: auto !important;
             }
             .page {
@@ -426,6 +445,7 @@
             <div class="map-header-line1">You live at the continent called <span class="map-header-city" id="continentMapHeaderContinent"></span></div>
         </div>
         <div id="continentMap"></div>
+        <div class="map-page-number">1</div>
     </div>
 
     <!-- Page 4: Country Map -->
@@ -434,6 +454,7 @@
             <div class="map-header-line1">You live at the country called <span class="map-header-city" id="countryMapHeaderCountry"></span></div>
         </div>
         <div id="countryMap"></div>
+        <div class="map-page-number">2</div>
     </div>
 
     <!-- Page 5: City Map -->
@@ -442,6 +463,7 @@
             <div class="map-header-line1">You live in a city called <span class="map-header-city" id="cityMapHeaderCity"></span></div>
         </div>
         <div id="cityMap"></div>
+        <div class="map-page-number">3</div>
     </div>
 
     <!-- Page 6: Street Map -->
@@ -451,6 +473,7 @@
             <div class="map-header-line2">Here is your address <span class="map-header-address" id="mapHeaderAddress"></span></div>
         </div>
         <div id="map"></div>
+        <div class="map-page-number">4</div>
     </div>
 
     <!-- Page 7: Exploration Questions (Screen only) -->
@@ -713,6 +736,20 @@
     </div>
 
     <script>
+        // Check for admin parameter in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const isAdmin = urlParams.has('admin');
+
+        // Hide admin pages if not admin
+        if (!isAdmin) {
+            document.addEventListener('DOMContentLoaded', function() {
+                const explorePage = document.querySelector('.page-explore');
+                const createPage = document.querySelector('.page-create');
+                if (explorePage) explorePage.style.display = 'none';
+                if (createPage) createPage.style.display = 'none';
+            });
+        }
+
         // Initialize interactive map for icon placement
         let interactiveMap = null;
         let interactiveMapGroup = null;
@@ -1078,6 +1115,8 @@
                     console.log('Clearing continent and country groups');
                     continentGroup.removeAll();
                     countryGroup.removeAll();
+                    cityGroup.removeAll();
+                    group.removeAll();
                     // Geocode the selected address
                     if (item.address) {
                         geocodeAddress(item.address);
@@ -1312,23 +1351,19 @@
             }
         });
 
-        // HERE Maps initialization
-        const platform = new H.service.Platform({
+        // Continent map (Page 3)
+        const continentPlatform = new H.service.Platform({
             'apikey': apiKey
         });
+        const continentDefaultLayers = continentPlatform.createDefaultLayers();
+        const continentStyle = new H.map.render.harp.Style("onlyfc1-2-noshields.tar.gz");
+        const continentVectorTileService = continentPlatform.getOMVService();
+        const continentVectorTileProvider = new H.service.omv.Provider(continentVectorTileService, continentStyle);
+        const continentVectorTileLayer = new H.map.layer.TileLayer(continentVectorTileProvider);
 
-        const defaultLayers = platform.createDefaultLayers();
-        //set No Pois for normal vector map
-        const style = new H.map.render.harp.Style(noPoisStyleDef);
-        const vectorTileService = platform.getOMVService();
-        const vectorTileProvider = new H.service.omv.Provider(vectorTileService, style);
-        const vectorTileLayer = new H.map.layer.TileLayer(vectorTileProvider);
-        defaultLayers.vector.normal.map = vectorTileLayer;
-
-        // Continent map (Page 3)
         const continentMap = new H.Map(
             document.getElementById('continentMap'),
-            defaultLayers.vector.normal.map,
+            continentVectorTileLayer,
             {
                 zoom: 3,
                 pixelRatio: window.devicePixelRatio || 1
@@ -1339,9 +1374,18 @@
         const continentBehavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(continentMap));
 
         // Country map (Page 4)
+        const countryPlatform = new H.service.Platform({
+            'apikey': apiKey
+        });
+        const countryDefaultLayers = countryPlatform.createDefaultLayers();
+        const countryStyle = new H.map.render.harp.Style("onlyfc1-2-noshields.tar.gz");
+        const countryVectorTileService = countryPlatform.getOMVService();
+        const countryVectorTileProvider = new H.service.omv.Provider(countryVectorTileService, countryStyle);
+        const countryVectorTileLayer = new H.map.layer.TileLayer(countryVectorTileProvider);
+
         const countryMap = new H.Map(
             document.getElementById('countryMap'),
-            defaultLayers.vector.normal.map,
+            countryVectorTileLayer,
             {
                 zoom: 3,
                 pixelRatio: window.devicePixelRatio || 1
@@ -1352,9 +1396,18 @@
         const countryBehavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(countryMap));
 
         // City map (Page 5)
+        const cityPlatform = new H.service.Platform({
+            'apikey': apiKey
+        });
+        const cityDefaultLayers = cityPlatform.createDefaultLayers();
+        const cityStyle = new H.map.render.harp.Style(noPoisStyleDef);
+        const cityVectorTileService = cityPlatform.getOMVService();
+        const cityVectorTileProvider = new H.service.omv.Provider(cityVectorTileService, cityStyle);
+        const cityVectorTileLayer = new H.map.layer.TileLayer(cityVectorTileProvider);
+
         const cityMap = new H.Map(
             document.getElementById('cityMap'),
-            defaultLayers.vector.normal.map,
+            cityVectorTileLayer,
             {
                 zoom: 3,
                 pixelRatio: window.devicePixelRatio || 1
@@ -1365,9 +1418,18 @@
         const cityBehavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(cityMap));
 
         // Street map (Page 6)
+        const streetPlatform = new H.service.Platform({
+            'apikey': apiKey
+        });
+        const streetDefaultLayers = streetPlatform.createDefaultLayers();
+        const streetStyle = new H.map.render.harp.Style(noPoisStyleDef);
+        const streetVectorTileService = streetPlatform.getOMVService();
+        const streetVectorTileProvider = new H.service.omv.Provider(streetVectorTileService, streetStyle);
+        const streetVectorTileLayer = new H.map.layer.TileLayer(streetVectorTileProvider);
+
         const map = new H.Map(
             document.getElementById('map'),
-            defaultLayers.vector.normal.map,
+            streetVectorTileLayer,
             {
                 zoom: 3,
                 pixelRatio: window.devicePixelRatio || 1
