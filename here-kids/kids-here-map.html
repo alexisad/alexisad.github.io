@@ -191,13 +191,15 @@
         /* Page 3: Map */
         .page-map {
             padding: 0;
-            padding-left: 10mm;
+            padding-left: 20mm;
+            width: 210mm;
+            margin-left: 0;
             display: flex;
             flex-direction: column;
             position: relative;
         }
         .map-header {
-            padding: 6mm 10mm;
+            padding: 6mm 0 6mm 0;
             text-align: center;
             background: white;
         }
@@ -458,41 +460,52 @@
         </div>
     </div>
 
-    <!-- Page 3: Continent Map -->
+    <!-- Page 3: Earth -->
+    <div class="page page-map" style="padding-left: 5mm;">
+        <div class="map-header">
+            <div class="map-header-line1">You live on the planet <span class="map-header-city">Earth</span></div>
+        </div>
+        <div style="flex: 1; display: flex; align-items: center; justify-content: center;">
+            <img src="earth.png" alt="Earth" style="width: 100%; height: 100%; object-fit: contain;">
+        </div>
+        <div class="map-page-number">1</div>
+    </div>
+
+    <!-- Page 4: Continent Map -->
     <div class="page page-map">
         <div class="map-header">
             <div class="map-header-line1">You live at the continent called <span class="map-header-city" id="continentMapHeaderContinent"></span>There are many countries here!</div>
         </div>
         <div id="continentMap"></div>
-        <div class="map-page-number">1</div>
+        <div class="map-page-number">2</div>
     </div>
 
-    <!-- Page 4: Country Map -->
+    <!-- Page 5: Country Map -->
     <div class="page page-map">
         <div class="map-header">
             <div class="map-header-line1">You live at the country called <span class="map-header-city" id="countryMapHeaderCountry"></span></div>
         </div>
         <div id="countryMap"></div>
-        <div class="map-page-number">2</div>
+        <div class="map-page-number">3</div>
     </div>
 
-    <!-- Page 5: City Map -->
+    <!-- Page 6: City Map -->
     <div class="page page-map">
         <div class="map-header">
             <div class="map-header-line1">You live in a city called <span class="map-header-city" id="cityMapHeaderCity"></span></div>
         </div>
         <div id="cityMap"></div>
-        <div class="map-page-number">3</div>
+        <div class="map-page-number">4</div>
     </div>
 
-    <!-- Page 6: Street Map -->
+    <!-- Page 7: Street Map -->
     <div class="page page-map">
         <div class="map-header">
             <!--div class="map-header-line1">You live in a city called <span class="map-header-city" id="mapHeaderCity"></span></div-->
             <div class="map-header-line2">Here is your address <span class="map-header-address" id="mapHeaderAddress"></span></div>
         </div>
         <div id="map"></div>
-        <div class="map-page-number">4</div>
+        <div class="map-page-number">5</div>
     </div>
 
     <!-- Page 7: Exploration Questions (Screen only) -->
@@ -756,13 +769,13 @@
 
     <!-- PDF pages as images for print only -->
     <div class="page page-map pdf-page-print-only">
-        <img src="pdf_page_1.png" alt="Page 5" class="pdf-page-image">
-        <div class="map-page-number">5</div>
+        <img src="pdf_page_1.png" alt="Page 6" class="pdf-page-image">
+        <div class="map-page-number">6</div>
     </div>
 
     <div class="page page-map pdf-page-print-only">
-        <img src="pdf_page_2.png" alt="Page 6" class="pdf-page-image">
-        <div class="map-page-number">6</div>
+        <img src="pdf_page_2.png" alt="Page 7" class="pdf-page-image">
+        <div class="map-page-number">7</div>
     </div>
 
     <script>
