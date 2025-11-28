@@ -366,6 +366,10 @@
             .map-page-number {
                 display: none;
             }
+            .pdf-page-print-only,
+            .pdf-page-print-only .map-page-number {
+                display: none !important;
+            }
         }
 
         @media print {
@@ -402,6 +406,21 @@
             #map, #cityMap, #countryMap, #continentMap {
                 page-break-inside: avoid;
                 break-inside: avoid;
+            }
+            .pdf-page-print-only {
+                display: flex !important;
+                position: relative !important;
+                left: auto !important;
+                padding: 0 !important;
+                align-items: center;
+                justify-content: center;
+            }
+            .pdf-page-image {
+                width: 115%;
+                height: auto;
+                max-width: 218mm;
+                max-height: 310mm;
+                object-fit: contain;
             }
         }
     </style>
@@ -733,6 +752,17 @@
                 <div id="interactiveMap"></div>
             </div>
         </div>
+    </div>
+
+    <!-- PDF pages as images for print only -->
+    <div class="page page-map pdf-page-print-only">
+        <img src="pdf_page_1.png" alt="Page 5" class="pdf-page-image">
+        <div class="map-page-number">5</div>
+    </div>
+
+    <div class="page page-map pdf-page-print-only">
+        <img src="pdf_page_2.png" alt="Page 6" class="pdf-page-image">
+        <div class="map-page-number">6</div>
     </div>
 
     <script>
