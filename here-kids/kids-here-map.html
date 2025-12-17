@@ -37,7 +37,7 @@
 
         /* Page 1: Form */
         .page-form {
-            padding: 40mm 0;
+            padding: 40mm 0 0 0;
             align-items: center;
             justify-content: space-between;
         }
@@ -463,18 +463,25 @@
 
     <!-- Page 1: Form -->
     <div class="page page-form">
-        <div class="form-group">
-            <label class="form-label">Address:</label>
-            <div class="autocomplete-wrapper">
-                <textarea class="form-input-address" id="addressInput" rows="2" placeholder="" autocomplete="off"></textarea>
-                <div class="autocomplete-list" id="autocompleteList"></div>
+        <div>
+            <div class="form-group">
+                <label class="form-label">Address:</label>
+                <div class="autocomplete-wrapper">
+                    <textarea class="form-input-address" id="addressInput" rows="2" placeholder="" autocomplete="off"></textarea>
+                    <div class="autocomplete-list" id="autocompleteList"></div>
+                </div>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">Name:</label>
+                <input type="text" class="form-input" id="nameInput" placeholder="">
             </div>
         </div>
-        <div class="form-group">
-            <label class="form-label">Name:</label>
-            <input type="text" class="form-input" id="nameInput" placeholder="">
+        <div style="text-align: center; width: 100%; margin-top: auto;">
+            <div style="margin-bottom: 8mm; font-size: 13pt; font-weight: 700; color: #666; line-height: 1.4;">
+                Please wait 30 sec before hitting the print button to enable the map to load completely
+            </div>
+            <button class="print-button" onclick="window.print()">Print</button>
         </div>
-        <button class="print-button" onclick="window.print()">Print</button>
     </div>
 
     <!-- Page 2: Title -->
