@@ -16,6 +16,9 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            /* Чтобы браузер не «упрощал» цвета в печати */
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
         body {
             font-family: 'Nunito', Arial, sans-serif;
@@ -234,6 +237,32 @@
         #map, #cityMap, #countryMap, #continentMap {
             width: 100%;
             flex: 1;
+            position: relative;
+        }
+
+        .frame-outer {
+            position: relative;
+            border-radius: 10px; /* меняй как нужно */
+            padding: 16px;       /* только для контента */
+            overflow: visible;   /* важно: чтобы внешняя рамка не обрезалась */
+        }
+
+        .frame-outer::before,
+        .frame-outer::after {
+            content: "";
+            position: absolute;
+            pointer-events: none;
+            border-radius: inherit;
+        }
+
+        .frame-outer::before {
+            inset: 10px;
+            border: 2px solid #2b2118;
+        }
+
+        .frame-outer::after {
+            inset: 16px;
+            border: 1px solid #2b2118;
         }
 
         /* Page 7: Exploration Questions */
@@ -307,6 +336,7 @@
         #interactiveMap {
             width: 100%;
             height: 100%;
+            position: relative;
         }
         .create-title {
             font-size: 36px;
@@ -428,6 +458,9 @@
     </style>
 </head>
 <body>
+    <!-- Hidden canvas for marker icon -->
+    <canvas id="markerCanvas" width="50" height="61" style="display: none;"></canvas>
+
     <!-- Page 1: Form -->
     <div class="page page-form">
         <div class="form-group">
@@ -465,7 +498,7 @@
         <div class="map-header">
             <div class="map-header-line1">You live on the planet <span class="map-header-city">Earth</span></div>
         </div>
-        <div style="flex: 1; display: flex; align-items: center; justify-content: center;">
+        <div class="frame-outer" style="flex: 1; display: flex; align-items: center; justify-content: center; position: relative;">
             <img src="earth.png" alt="Earth" style="width: 100%; height: 100%; object-fit: contain;">
         </div>
         <div class="map-page-number">1</div>
@@ -476,7 +509,7 @@
         <div class="map-header">
             <div class="map-header-line1">You live at the continent called <span class="map-header-city" id="continentMapHeaderContinent"></span><br/><span>There are many countries here!</span></div>
         </div>
-        <div id="continentMap"></div>
+        <div id="continentMap" class="frame-outer"></div>
         <div class="map-page-number">2</div>
     </div>
 
@@ -485,7 +518,7 @@
         <div class="map-header">
             <div class="map-header-line1">You live at the country called <span class="map-header-city" id="countryMapHeaderCountry"></span></div>
         </div>
-        <div id="countryMap"></div>
+        <div id="countryMap" class="frame-outer"></div>
         <div class="map-page-number">3</div>
     </div>
 
@@ -494,7 +527,7 @@
         <div class="map-header">
             <div class="map-header-line1">You live in a city called <span class="map-header-city" id="cityMapHeaderCity"></span></div>
         </div>
-        <div id="cityMap"></div>
+        <div id="cityMap" class="frame-outer"></div>
         <div class="map-page-number">4</div>
     </div>
 
@@ -504,7 +537,7 @@
             <!--div class="map-header-line1">You live in a city called <span class="map-header-city" id="mapHeaderCity"></span></div-->
             <div class="map-header-line2">Here is your address <span class="map-header-address" id="mapHeaderAddress"></span></div>
         </div>
-        <div id="map"></div>
+        <div id="map" class="frame-outer"></div>
         <div class="map-page-number">5</div>
     </div>
 
@@ -762,7 +795,7 @@
             </div>
 
             <div class="map-section">
-                <div id="interactiveMap"></div>
+                <div id="interactiveMap" class="frame-outer"></div>
             </div>
         </div>
     </div>
@@ -978,6 +1011,40 @@
 
     </script>
     <script>
+        // Create custom marker icon
+        const canvas = document.getElementById('markerCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Установить прозрачность 50% непрозрачности
+        ctx.globalAlpha = 0.5;
+
+        // Основной цвет круга
+        const circleColor = '#3ab4b4';       // светлее
+        const triangleColor = '#329999';     // немного темнее
+
+        // Центр круга
+        const centerX = canvas.width / 2;
+        const circleRadius = 20;  // 25 * 0.8 = 20
+
+        // Рисуем круг
+        ctx.beginPath();
+        ctx.arc(centerX, 24, circleRadius, 0, Math.PI * 2);  // 30 * 0.8 = 24
+        ctx.fillStyle = circleColor;
+        ctx.fill();
+        ctx.closePath();
+
+        // Рисуем нижний треугольник
+        ctx.beginPath();
+        ctx.moveTo(centerX - 12, 40);  // (15 * 0.8 = 12, 50 * 0.8 = 40)
+        ctx.lineTo(centerX + 12, 40);  // правая точка
+        ctx.lineTo(centerX, 60);       // (75 * 0.8 = 60) нижняя точка
+        ctx.fillStyle = triangleColor;
+        ctx.fill();
+        ctx.closePath();
+
+        // Create H.map.Icon from canvas
+        const customMarkerIcon = new H.map.Icon(canvas);
+
         // HERE API key
         const apiKey = 'jFKqNUf-yp9ntKrlFfHThx0vAq__yTDIHvlSA9CV6TI';
         const api_key_fta = 'jgdCO8aWhbDtVL1B7xEaJI7TAChbxdZTiNJjRE5Iacc';
@@ -1262,13 +1329,13 @@
                     // Add markers to all maps (create separate marker instances)
                     group.removeAll();
 
-                    const markerStreet = new H.map.Marker({lat: position.lat, lng: position.lng});
+                    const markerStreet = new H.map.Marker({lat: position.lat, lng: position.lng}, { icon: customMarkerIcon });
                     group.addObject(markerStreet);
 
-                    const markerCountry = new H.map.Marker({lat: position.lat, lng: position.lng});
+                    const markerCountry = new H.map.Marker({lat: position.lat, lng: position.lng}, { icon: customMarkerIcon });
                     countryGroup.addObject(markerCountry);
 
-                    const markerCity = new H.map.Marker({lat: position.lat, lng: position.lng});
+                    const markerCity = new H.map.Marker({lat: position.lat, lng: position.lng}, { icon: customMarkerIcon });
                     cityGroup.addObject(markerCity);
 
                     // Get continent from timezone
@@ -1402,6 +1469,13 @@
         const continentStyle = new H.map.render.harp.Style("onlyfc1-2-noshields.tar.gz");
         const continentVectorTileService = continentPlatform.getOMVService();
         const continentVectorTileProvider = new H.service.omv.Provider(continentVectorTileService, continentStyle);
+        setTimeout(e => {
+            let style = continentVectorTileProvider.getStyleInternal().getConfig();
+            reduceSizeLabels(style);
+            const nSt = new H.map.render.harp.Style(style);
+            continentVectorTileProvider.setStyleInternal(nSt);
+        }, 2000);
+
         const continentVectorTileLayer = new H.map.layer.TileLayer(continentVectorTileProvider);
 
         const continentMap = new H.Map(
@@ -1428,6 +1502,14 @@
         const countryStyle = new H.map.render.harp.Style("onlyfc1-2-noshields.tar.gz");
         const countryVectorTileService = countryPlatform.getOMVService();
         const countryVectorTileProvider = new H.service.omv.Provider(countryVectorTileService, countryStyle);
+        setTimeout(e => {
+            let style = countryVectorTileProvider.getStyleInternal().getConfig();
+            //console.log("style cfg:", countryVectorTileProvider.getStyleInternal().getConfig());
+            reduceSizeLabels(style);
+            const nSt = new H.map.render.harp.Style(style);
+            countryVectorTileProvider.setStyleInternal(nSt);
+        }, 2000);
+        
         const countryVectorTileLayer = new H.map.layer.TileLayer(countryVectorTileProvider);
 
         const countryMap = new H.Map(
@@ -1454,6 +1536,13 @@
         const cityStyle = new H.map.render.harp.Style(noPoisStyleDef);
         const cityVectorTileService = cityPlatform.getOMVService();
         const cityVectorTileProvider = new H.service.omv.Provider(cityVectorTileService, cityStyle);
+        setTimeout(e => {
+            let style = cityVectorTileProvider.getStyleInternal().getConfig();
+            reduceSizeLabels(style);
+            const nSt = new H.map.render.harp.Style(style);
+            cityVectorTileProvider.setStyleInternal(nSt);
+        }, 2000);
+
         const cityVectorTileLayer = new H.map.layer.TileLayer(cityVectorTileProvider);
 
         const cityMap = new H.Map(
@@ -1480,6 +1569,13 @@
         const streetStyle = new H.map.render.harp.Style(noPoisStyleDef);
         const streetVectorTileService = streetPlatform.getOMVService();
         const streetVectorTileProvider = new H.service.omv.Provider(streetVectorTileService, streetStyle);
+        setTimeout(e => {
+            let style = streetVectorTileProvider.getStyleInternal().getConfig();
+            reduceSizeLabels(style);
+            const nSt = new H.map.render.harp.Style(style);
+            streetVectorTileProvider.setStyleInternal(nSt);
+        }, 2000);
+
         const streetVectorTileLayer = new H.map.layer.TileLayer(streetVectorTileProvider);
 
         const map = new H.Map(
@@ -2012,6 +2108,36 @@
             }
             return result;
         }
+
+        function reduceSizeLabels(style){
+            const SCALE = 0.8; // -20%
+
+            const defs = style.definitions ?? style;
+
+            const keys = Array.from({ length: 7 }, (_, i) => `CityCenter.Class${i + 1}.Label.Size`);
+
+            for (const k of keys) {
+                const expr = defs[k];
+                if (!Array.isArray(expr)) continue;
+
+                // ожидаемый формат: ["interpolate", ["linear"], ["zoom"], z1, s1, z2, s2, ...]
+                const isZoomInterpolate =
+                    expr[0] === "interpolate" &&
+                    Array.isArray(expr[2]) &&
+                    expr[2][0] === "zoom" &&
+                    expr.length >= 5;
+
+                if (!isZoomInterpolate) continue;
+
+                // с индекса 3 идут пары (zoom -> size)
+                for (let i = 3; i + 1 < expr.length; i += 2) {
+                    const size = expr[i + 1];
+                    if (typeof size === "number") expr[i + 1] = size * SCALE;
+                }
+            }
+        }
+
+
 
     </script>
 </body>
