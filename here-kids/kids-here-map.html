@@ -1358,7 +1358,7 @@
 
                     // Geocode city for city map
                     if (address.countryCode && city) {
-                        geocodeCity(address.countryCode, city);
+                        geocodeCity(address.countryCode, city, geocodedAddress);
                     }
                 }
             } catch (error) {
@@ -1430,7 +1430,7 @@
         }
 
         // Geocode city to get bounding box
-        async function geocodeCity(countryCode, cityName) {
+        async function geocodeCity(countryCode, cityName, referenceAddress = null) {
             const geocodeUrl = `https://geocode.search.hereapi.com/v1/geocode?qq=country=${encodeURIComponent(countryCode)};city=${encodeURIComponent(cityName)}&apiKey=${apiKey}&showMapReferences=adminIds`;
 
             try {
@@ -1438,7 +1438,56 @@
                 const data = await response.json();
 
                 if (data.items && data.items.length > 0) {
-                    const item = data.items[0];
+                    let item = data.items[0]; // Default to first item
+
+                    // If reference address provided and multiple results, find best match
+                    if (referenceAddress && data.items.length > 1) {
+                        console.log(`Multiple cities found (${data.items.length}), matching by county/state/postalCode...`);
+
+                        let bestMatch = null;
+                        let bestScore = 0;
+
+                        for (const cityItem of data.items) {
+                            const cityAddr = cityItem.address;
+                            let score = 0;
+
+                            // Compare county
+                            if (referenceAddress.county && cityAddr.county &&
+                                referenceAddress.county.toLowerCase() === cityAddr.county.toLowerCase()) {
+                                score += 3; // Highest weight
+                            }
+
+                            // Compare stateCode
+                            if (referenceAddress.stateCode && cityAddr.stateCode &&
+                                referenceAddress.stateCode === cityAddr.stateCode) {
+                                score += 2;
+                            }
+
+                            // Compare postalCode (first 3 digits for proximity)
+                            if (referenceAddress.postalCode && cityAddr.postalCode) {
+                                const refPostal = referenceAddress.postalCode.substring(0, 3);
+                                const cityPostal = cityAddr.postalCode.substring(0, 3);
+                                if (refPostal === cityPostal) {
+                                    score += 1;
+                                }
+                            }
+
+                            console.log(`  - ${cityAddr.city}, ${cityAddr.stateCode || cityAddr.state || ''}, county: ${cityAddr.county || 'N/A'}, score: ${score}`);
+
+                            if (score > bestScore) {
+                                bestScore = score;
+                                bestMatch = cityItem;
+                            }
+                        }
+
+                        if (bestMatch && bestScore > 0) {
+                            item = bestMatch;
+                            console.log(`Selected best match with score ${bestScore}:`, bestMatch.address);
+                        } else {
+                            console.log('No good match found, using first result');
+                        }
+                    }
+
                     const mapView = item.mapView;
                     console.log('City mapView:', mapView);
 
